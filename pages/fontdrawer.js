@@ -773,30 +773,36 @@ $(document).ready(async function () {
 	});
 
 	// 筆壓繪圖設定事件監聽器
-	$('#pressureDrawingEnabled').on('change', function () { 
+	$('#pressureDrawingEnabled').on('change', async function () { 
 		const enabled = $(this).prop('checked');
 		saveToDB('pressureDrawingEnabled', enabled ? 'Y' : 'N');
 		$('#pressureSettings').toggle(enabled);
-		// 更新筆壓繪圖狀態
-		updatePressureDrawingStatus();
+		// 立即更新筆壓繪圖狀態
+		await updatePressureDrawingStatus();
 	});
 
 	$('#pressureThinningSlider').on('input', function () { 
 		var value = parseFloat($(this).val());
 		$('#pressureThinningValue').text(value);
 		saveToDB('pressureThinning', value);
+		// 立即更新設定
+		pressureDrawingSettings.thinning = value;
 	});
 
 	$('#pressureSmoothingSlider').on('input', function () { 
 		var value = parseFloat($(this).val());
 		$('#pressureSmoothingValue').text(value);
 		saveToDB('pressureSmoothing', value);
+		// 立即更新設定
+		pressureDrawingSettings.smoothing = value;
 	});
 
 	$('#pressureStreamlineSlider').on('input', function () { 
 		var value = parseFloat($(this).val());
 		$('#pressureStreamlineValue').text(value);
 		saveToDB('pressureStreamline', value);
+		// 立即更新設定
+		pressureDrawingSettings.streamline = value;
 	});
 
 	// 顯示字表畫面
