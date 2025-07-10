@@ -258,7 +258,7 @@ $(document).ready(async function () {
     let pressureDrawingEnabled = false;
     let pressureDrawingSettings = {
         thinning: 0.3,
-        smoothing: 0.7,
+        smoothing: 0.5,
         streamline: 0.7
     };
 
@@ -272,7 +272,7 @@ $(document).ready(async function () {
         
         // 載入筆壓繪圖設定
         pressureDrawingSettings.thinning = parseFloat(await loadFromDB('pressureThinning') || 0.3);
-        pressureDrawingSettings.smoothing = parseFloat(await loadFromDB('pressureSmoothing') || 0.7);
+        pressureDrawingSettings.smoothing = parseFloat(await loadFromDB('pressureSmoothing') || 0.5);
         pressureDrawingSettings.streamline = parseFloat(await loadFromDB('pressureStreamline') || 0.7);
     }
 
@@ -293,7 +293,7 @@ $(document).ready(async function () {
 			await saveToDB('pressureThinning', 0.3);
 		}
 		if (await loadFromDB('pressureSmoothing') === null) {
-			await saveToDB('pressureSmoothing', 0.7);
+			await saveToDB('pressureSmoothing', 0.5);
 		}
 		if (await loadFromDB('pressureStreamline') === null) {
 			await saveToDB('pressureStreamline', 0.7);
@@ -499,9 +499,11 @@ $(document).ready(async function () {
                 streamline: pressureDrawingSettings.streamline
             });
             
-            if (finalStroke && backgroundImageData) {
-                // 恢復背景圖像
-                ctx.putImageData(backgroundImageData, 0, 0);
+            if (finalStroke && finalStroke.length > 0) {
+                // 恢復背景圖像（如果有的話）
+                if (backgroundImageData) {
+                    ctx.putImageData(backgroundImageData, 0, 0);
+                }
                 
                 // 繪製最終筆跡
                 pressureDrawing.drawStrokeOnCanvas(ctx, finalStroke, eraseMode);
@@ -742,7 +744,7 @@ $(document).ready(async function () {
 		$('#pressureThinningSlider').val(thinning);
 		$('#pressureThinningValue').text(thinning);
 		
-		const smoothing = await loadFromDB('pressureSmoothing') || 0.7;
+		const smoothing = await loadFromDB('pressureSmoothing') || 0.5;
 		$('#pressureSmoothingSlider').val(smoothing);
 		$('#pressureSmoothingValue').text(smoothing);
 		

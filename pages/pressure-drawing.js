@@ -87,8 +87,7 @@ class PressureDrawing {
 
     // Finish the current stroke and return the path
     finishStroke(options = {}) {
-        if (!this.isDrawing || this.currentStroke.length < 2) {
-            this.isDrawing = false;
+        if (!this.isDrawing) {
             this.delayedStart = false;
             this.startPoint = null;
             return null;
@@ -99,6 +98,15 @@ class PressureDrawing {
             this.isDrawing = false;
             this.delayedStart = false;
             const strokePoints = [[this.startPoint.x, this.startPoint.y, this.startPoint.pressure]];
+            this.startPoint = null;
+            return this.generateCircularDot(strokePoints, options);
+        }
+        
+        // 如果筆跡太短（只有起始點），也生成圓形點
+        if (this.currentStroke.length < 2) {
+            this.isDrawing = false;
+            this.delayedStart = false;
+            const strokePoints = [...this.currentStroke];
             this.startPoint = null;
             return this.generateCircularDot(strokePoints, options);
         }
@@ -341,8 +349,8 @@ class PressureDrawing {
         const avgPressure = totalPressure / strokePoints.length;
         
         // 根據壓力計算半徑
-        const baseRadius = (options.size || 12) * 0.5;
-        const radius = baseRadius * (0.3 + avgPressure * 0.7); // 根據壓力調整大小
+        const baseRadius = (options.size || 12) * 0.6; // 增加基礎半徑
+        const radius = baseRadius * (0.4 + avgPressure * 0.8); // 增加最小和最大半徑
         
         // 生成圓形的點
         const circlePoints = [];
