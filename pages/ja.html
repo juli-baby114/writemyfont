@@ -68,7 +68,7 @@
 		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
 		.dialog h2 { margin-top: 0.2em }
 		.close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
-		.dialog-body { height: 84%; overflow: scroll  }
+		.dialog-body { height: 100%; overflow: scroll  }
 
 		#listup-body img { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 		#listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: LessonOne, sans-serif; overflow: hidden; }
@@ -176,6 +176,27 @@
 			<span class="note">手書きフォントの性格上、固定幅よりもプロポーショナル幅の方が自然に見える場合がありますが、縦書きとしての利用に不向きです。</span>
 			<br />
 			<br />
+			<label for="pressureDrawingEnabled">筆圧/模擬筆圧描画システムを有効化</label>
+			<input id="pressureDrawingEnabled" type="checkbox" checked />
+			<span class="note">有効にすると、タッチペンや筆圧対応デバイスでより自然な筆圧効果を得られます。筆圧不対応の設備でも自動的に筆圧繪圖を模擬します。</span>
+			<br />
+			<div id="pressureSettings" style="margin-left: 20px; display: block;">
+				<label for="pressureThinningSlider">筆圧の太さへの影響 (thinning)</label>
+				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.3" />
+				<span id="pressureThinningValue">0.3</span>
+				<span class="note">値が大きいほど、筆圧変化が線の太さに与える影響が大きくなります。</span>
+				<br />
+				<label for="pressureSmoothingSlider">スムージング程度 (smoothing)</label>
+				<input id="pressureSmoothingSlider" type="range" min="0" max="1" step="0.1" value="0.7" />
+				<span id="pressureSmoothingValue">0.7</span>
+				<span class="note">値が大きいほど、線がより滑らかになります。</span>
+				<br />
+				<label for="pressureStreamlineSlider">ストリームライン程度 (streamline)</label>
+				<input id="pressureStreamlineSlider" type="range" min="0" max="1" step="0.1" value="0.7" />
+				<span id="pressureStreamlineValue">0.7</span>
+				<span class="note">値が大きいほど、線がより流暢になりますが、筆圧変化が目立ちにくくなる場合があります。</span>
+			</div>
+			<br />
 			<br />
 			<hr />
 			<label for="clearAllButton">フォントデータを削除する</label>
@@ -208,6 +229,7 @@
 			clearDone: '削除しました'
 		};
 	</script>
+    <script src="pressure-drawing.js"></script>
     <script src="jglyphlist.js"></script>
     <script src="fontdrawer.js"></script>
 </body>

@@ -36,10 +36,10 @@
 		#nextButton { font-size: 2.5em; position: absolute; right: 0; top: 0; border: 0; background: transparent; box-shadow: none }
 
         #canvas-container { position: relative; width: 360px; height: 360px; border: 1px solid #888; background-color: #fff;}
-		canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px }
+		canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch-action: none; }
 		@media screen and ((max-height: 700px) or (max-width: 380px)) {
 			#canvas-container { width: 320px; height: 320px }
-			canvas { width: 320px; height: 320px  }
+			canvas { width: 320px; height: 320px; touch-action: none; }
 		}
 
 		/* 九宮格底圖樣式 */
@@ -69,7 +69,7 @@
 		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
 		.dialog h2 { margin-top: 0.2em }
 		.close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
-		.dialog-body { height: 84%; overflow: scroll  }
+		.dialog-body { height: 100%; overflow: scroll  }
 
 		#listup-body img { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 		#listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: GenYoExt, LessonOne, sans-serif; overflow: hidden; }
@@ -177,6 +177,27 @@
 			<span class="note">設定為不等寬會更像手寫字型，但可能不適合用於直排。</span>
 			<br />
 			<br />
+			<label for="pressureDrawingEnabled">啟用筆壓/模擬筆壓繪圖系統</label>
+			<input id="pressureDrawingEnabled" type="checkbox" checked />
+			<span class="note">啟用後可提供更自然的筆壓效果，適合觸控筆或支援筆壓的設備。不支援的設備也會自動模擬筆壓繪圖。</span>
+			<br />
+			<div id="pressureSettings" style="margin-left: 20px; display: block;">
+				<label for="pressureThinningSlider">壓力對粗細的影響 (thinning)</label>
+				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.3" />
+				<span id="pressureThinningValue">0.3</span>
+				<span class="note">數值越大，壓力變化對線條粗細的影響越明顯。</span>
+				<br />
+				<label for="pressureSmoothingSlider">平滑程度 (smoothing)</label>
+				<input id="pressureSmoothingSlider" type="range" min="0" max="1" step="0.1" value="0.7" />
+				<span id="pressureSmoothingValue">0.7</span>
+				<span class="note">數值越大，線條越平滑。</span>
+				<br />
+				<label for="pressureStreamlineSlider">流線化程度 (streamline)</label>
+				<input id="pressureStreamlineSlider" type="range" min="0" max="1" step="0.1" value="0.7" />
+				<span id="pressureStreamlineValue">0.7</span>
+				<span class="note">數值越大，線條越流暢，但筆壓變化可能較不明顯。</span>
+			</div>
+			<br />
 			<br />
 			<hr />
 			<label for="clearAllButton">完全清除字型資料</label>
@@ -210,6 +231,7 @@
 			clearDone: '已清除。'
 		};
 	</script>
+    <script src="pressure-drawing.js"></script>
     <script src="fontdrawer.js"></script>
 </body>
 </html>

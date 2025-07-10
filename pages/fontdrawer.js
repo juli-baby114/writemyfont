@@ -253,11 +253,51 @@ $(document).ready(async function () {
     const $progressBar = $('#progress-bar');
     const $progressText = $('#progress-text');
 
+    // 初始化 PressureDrawing 實例
+    const pressureDrawing = new PressureDrawing();
+    let pressureDrawingEnabled = false;
+    let pressureDrawingSettings = {
+        thinning: 0.3,
+        smoothing: 0.7,
+        streamline: 0.7
+    };
+
+    // 更新筆壓繪圖狀態
+    async function updatePressureDrawingStatus() {
+        const enabled = await loadFromDB('pressureDrawingEnabled');
+        const moduleInitialized = await pressureDrawing.initialize();
+        
+        // 預設啟用筆壓繪圖（除非明確設定為 N）
+        pressureDrawingEnabled = (enabled !== 'N') && moduleInitialized;
+        
+        // 載入筆壓繪圖設定
+        pressureDrawingSettings.thinning = parseFloat(await loadFromDB('pressureThinning') || 0.3);
+        pressureDrawingSettings.smoothing = parseFloat(await loadFromDB('pressureSmoothing') || 0.7);
+        pressureDrawingSettings.streamline = parseFloat(await loadFromDB('pressureStreamline') || 0.7);
+    }
+
     // 初始化 IndexedDB
-    initDB().then(() => {
+    initDB().then(async () => {
         console.log('IndexedDB 起動完成');
 		initCanvas(canvas);	// 初始化九宮格底圖
 		$listSelect.change(); // 觸發一次 change 事件以載入第一個列表
+		
+		// 初始化筆壓繪圖狀態
+		await updatePressureDrawingStatus();
+		
+		// 如果是第一次使用，保存預設值
+		if (await loadFromDB('pressureDrawingEnabled') === null) {
+			await saveToDB('pressureDrawingEnabled', 'Y');
+		}
+		if (await loadFromDB('pressureThinning') === null) {
+			await saveToDB('pressureThinning', 0.3);
+		}
+		if (await loadFromDB('pressureSmoothing') === null) {
+			await saveToDB('pressureSmoothing', 0.7);
+		}
+		if (await loadFromDB('pressureStreamline') === null) {
+			await saveToDB('pressureStreamline', 0.7);
+		}
     }).catch((error) => {
         console.error('IndexedDB 起動失敗', error);
     });
@@ -298,6 +338,11 @@ $(document).ready(async function () {
 		undoStack.length = 0; // 清空復原堆疊
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		loadCanvasData(nowGlyph);
+		
+		// 重置筆壓檢測狀態
+		if (pressureDrawingEnabled) {
+			pressureDrawing.resetPressureDetection();
+		}
 	}
 
 	// 儲存畫布的功能
@@ -361,13 +406,29 @@ $(document).ready(async function () {
         saveToDB('lineWidth', lineWidth); // 儲存筆寬到 Local Storage
     });
 
+    // 儲存背景用於筆壓繪圖的即時預覽
+    let backgroundImageData = null;
+
     // 開始繪製
-    $canvas.on('mousedown touchstart', function (event) {
+    $canvas.on('mousedown touchstart pointerdown', function (event) {
         isDrawing = true;
 		undoStack.push(canvas.toDataURL()); // 儲存當前畫布狀態到 undoStack
         const { x, y } = getCanvasCoordinates(event);
-        ctx.beginPath();
-        ctx.moveTo(x * ratio, y * ratio);
+        
+        if (pressureDrawingEnabled) {
+            // 使用筆壓繪圖系統
+            const pressure = pressureDrawing.simulatePressure(event.originalEvent, 'start');
+            pressureDrawing.startStroke(x * ratio, y * ratio, pressure);
+            // 儲存背景圖像用於即時預覽
+            backgroundImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // 防止預設的觸控行為（如滾動）
+            event.preventDefault();
+        } else {
+            // 使用傳統繪圖系統
+            ctx.beginPath();
+            ctx.moveTo(x * ratio, y * ratio);
+        }
 	});
 
 	var eraseMode = false;
@@ -384,24 +445,75 @@ $(document).ready(async function () {
 	});
 
     // 繪製中
-	$canvas.on('mousemove touchmove', function (event) {
+	$canvas.on('mousemove touchmove pointermove', function (event) {
         if (!isDrawing) return;
         const { x, y } = getCanvasCoordinates(event);
 
-		ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
-		// 毛筆模式：動態調整線條粗細
-		ctx.lineWidth = lineWidth * 0.7 + Math.random() * lineWidth * 0.6; // 粗細隨機變化
-		ctx.lineJoin = 'round'; // 線條連接處為圓角
-		ctx.lineCap = 'round'; // 線條端點為圓角
-        ctx.lineTo(x*ratio, y*ratio);
-		ctx.strokeStyle = 'black';
-        ctx.stroke();
+        if (pressureDrawingEnabled) {
+            // 使用筆壓繪圖系統：收集點並提供即時預覽
+            const pressure = pressureDrawing.simulatePressure(event.originalEvent, 'move');
+            pressureDrawing.addPoint(x * ratio, y * ratio, pressure);
+            
+            // 生成即時預覽筆跡
+            const previewStroke = pressureDrawing.createPreviewStroke({
+                size: lineWidth,
+                thinning: pressureDrawingSettings.thinning,
+                smoothing: pressureDrawingSettings.smoothing,
+                streamline: pressureDrawingSettings.streamline
+            });
+            
+            if (previewStroke && backgroundImageData) {
+                // 恢復背景圖像
+                ctx.putImageData(backgroundImageData, 0, 0);
+                
+                // 繪製預覽筆跡
+                pressureDrawing.drawStrokeOnCanvas(ctx, previewStroke, eraseMode);
+            }
+            
+            // 防止預設的觸控行為
+            event.preventDefault();
+        } else {
+            // 使用傳統繪圖系統
+            ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
+            // 毛筆模式：動態調整線條粗細
+            ctx.lineWidth = lineWidth * 0.7 + Math.random() * lineWidth * 0.6; // 粗細隨機變化
+            ctx.lineJoin = 'round'; // 線條連接處為圓角
+            ctx.lineCap = 'round'; // 線條端點為圓角
+            ctx.lineTo(x*ratio, y*ratio);
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+        }
     });
 
     // 停止繪製
-    $canvas.on('mouseup mouseleave touchend', function () {
+    $canvas.on('mouseup mouseleave touchend pointerup pointerleave', function (event) {
+        if (!isDrawing) return;
         isDrawing = false;
-        ctx.closePath();
+        
+        if (pressureDrawingEnabled) {
+            // 使用筆壓繪圖系統：生成最終筆跡並繪製
+            const finalStroke = pressureDrawing.finishStroke({
+                size: lineWidth,
+                thinning: pressureDrawingSettings.thinning,
+                smoothing: pressureDrawingSettings.smoothing,
+                streamline: pressureDrawingSettings.streamline
+            });
+            
+            if (finalStroke && backgroundImageData) {
+                // 恢復背景圖像
+                ctx.putImageData(backgroundImageData, 0, 0);
+                
+                // 繪製最終筆跡
+                pressureDrawing.drawStrokeOnCanvas(ctx, finalStroke, eraseMode);
+            }
+            
+            // 清除背景圖像數據
+            backgroundImageData = null;
+        } else {
+            // 使用傳統繪圖系統
+            ctx.closePath();
+        }
+        
         saveToLocalDB(); // 停止繪製時儲存畫布內容到 Local Storage
     });
 
@@ -621,6 +733,26 @@ $(document).ready(async function () {
 		$('#scaleRateSlider').val(scale);
 		$('#scaleRateValue').text(scale + '%');
 
+		// 載入筆壓繪圖設定
+		const pressureEnabledSetting = await loadFromDB('pressureDrawingEnabled');
+		const pressureEnabled = pressureEnabledSetting !== 'N'; // 預設啟用（除非明確設定為 N）
+		$('#pressureDrawingEnabled').prop('checked', pressureEnabled);
+		
+		const thinning = await loadFromDB('pressureThinning') || 0.3;
+		$('#pressureThinningSlider').val(thinning);
+		$('#pressureThinningValue').text(thinning);
+		
+		const smoothing = await loadFromDB('pressureSmoothing') || 0.7;
+		$('#pressureSmoothingSlider').val(smoothing);
+		$('#pressureSmoothingValue').text(smoothing);
+		
+		const streamline = await loadFromDB('pressureStreamline') || 0.7;
+		$('#pressureStreamlineSlider').val(streamline);
+		$('#pressureStreamlineValue').text(streamline);
+		
+		// 控制筆壓設定區域的顯示/隱藏
+		$('#pressureSettings').toggle(pressureEnabled);
+
 		$('#spanAllCount').text(Object.keys(glyphMap).length);
 		$('#spanDoneCount').text(await countGlyphFromDB());
     });
@@ -638,6 +770,33 @@ $(document).ready(async function () {
 		$('#scaleRateValue').text(rate + '%');
 		saveToDB('scaleRate', rate);
 		initCanvas(canvas);
+	});
+
+	// 筆壓繪圖設定事件監聽器
+	$('#pressureDrawingEnabled').on('change', function () { 
+		const enabled = $(this).prop('checked');
+		saveToDB('pressureDrawingEnabled', enabled ? 'Y' : 'N');
+		$('#pressureSettings').toggle(enabled);
+		// 更新筆壓繪圖狀態
+		updatePressureDrawingStatus();
+	});
+
+	$('#pressureThinningSlider').on('input', function () { 
+		var value = parseFloat($(this).val());
+		$('#pressureThinningValue').text(value);
+		saveToDB('pressureThinning', value);
+	});
+
+	$('#pressureSmoothingSlider').on('input', function () { 
+		var value = parseFloat($(this).val());
+		$('#pressureSmoothingValue').text(value);
+		saveToDB('pressureSmoothing', value);
+	});
+
+	$('#pressureStreamlineSlider').on('input', function () { 
+		var value = parseFloat($(this).val());
+		$('#pressureStreamlineValue').text(value);
+		saveToDB('pressureStreamline', value);
 	});
 
 	// 顯示字表畫面
