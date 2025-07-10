@@ -13,7 +13,7 @@ class PressureDrawing {
         this.pressureCheckCount = 0; // 用於檢測筆壓支援
         this.delayedStart = false;  // 是否在延遲繪製狀態
         this.startPoint = null;     // 起筆點
-        this.moveThreshold = 8;     // 移動閾值（像素）
+        this.moveThreshold = 5;     // 移動閾值（像素）
     }
 
     // Initialize the perfect-freehand module

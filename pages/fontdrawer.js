@@ -267,8 +267,8 @@ $(document).ready(async function () {
         const enabled = await loadFromDB('pressureDrawingEnabled');
         const moduleInitialized = await pressureDrawing.initialize();
         
-        // 預設啟用筆壓繪圖（除非明確設定為 N）
-        pressureDrawingEnabled = (enabled !== 'N') && moduleInitialized;
+        // 預設關閉筆壓繪圖
+        pressureDrawingEnabled = (enabled == 'Y') && moduleInitialized;
         
         // 載入筆壓繪圖設定
         pressureDrawingSettings.thinning = parseFloat(await loadFromDB('pressureThinning') || 0.5);
@@ -287,7 +287,7 @@ $(document).ready(async function () {
 		
 		// 如果是第一次使用，保存預設值
 		if (await loadFromDB('pressureDrawingEnabled') === null) {
-			await saveToDB('pressureDrawingEnabled', 'Y');
+			await saveToDB('pressureDrawingEnabled', 'N');
 		}
 		if (await loadFromDB('pressureThinning') === null) {
 			await saveToDB('pressureThinning', 0.5);
@@ -737,7 +737,7 @@ $(document).ready(async function () {
 
 		// 載入筆壓繪圖設定
 		const pressureEnabledSetting = await loadFromDB('pressureDrawingEnabled');
-		const pressureEnabled = pressureEnabledSetting !== 'N'; // 預設啟用（除非明確設定為 N）
+		const pressureEnabled = pressureEnabledSetting == 'Y';
 		$('#pressureDrawingEnabled').prop('checked', pressureEnabled);
 		
 		const thinning = await loadFromDB('pressureThinning') || 0.5;
