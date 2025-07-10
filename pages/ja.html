@@ -58,7 +58,7 @@
 		#progress-container { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #fff; padding: 10px; text-align: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
 		#progress-bar { width: 80%; height: 20px; display: block; margin: 0 auto; }
 
-		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
+		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 95%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
 		.dialog h2 { margin-top: 0.2em }
 		.close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
 		.dialog-body { height: 100%; overflow: scroll  }
@@ -134,7 +134,7 @@
 
 	<div id="hint-container" class="dialog">
 		<span id="closeHintButton" class="close">×</span>
-		<h2>ヒント Ver 0.31</h2>
+		<h2>ヒント Ver 0.32</h2>
 		<ul id="hintContent" class="dialog-body">
 			<li>このツールは「<a href="https://x.com/buttaiwan" target="_blank">@buttaiwan</a>」が作りました（半分くらいはAIに放り投げたがｗ）。</li>
 			<li>すべてのデータはブラウザに保存されるため、未完成のフォントは定期的にバックアップすることをおすすめします。</li>
@@ -145,6 +145,7 @@
 			<li>「OTFフォントファイルをDL！」ボタンを押すと、フォントファイルがダウンロードされます。AirDropなどでパソコンに転送してご利用ください。</li>
 			<li>生成されたフォントのあらゆる権利は、利用者に属します。公開も商用利用もご自由にどうぞ。</li>
 			<li>技術的制限上、現在このツールで生成されたOTFファイルは、インストールして利用すること自体は可能ですが、正確なCIDフォーマットではないため、Adobeアプリケーションなどでは日本語フォントとして認識されない恐れがあります。</li>
+			<li>フォントがパソコンにキャッシュされる場合があるので、テストインストールの段階では常にフォント名を番号をつけたりして変えてください。</li>
 			<li>本サービスの利用によって、利用者および第三者に生じた損害について、サービス提供者は責任を負わないものとします。</li>
 			<li>素晴らしい<a href="https://github.com/kilobtye/potrace" target="_blank">potrace.js</a>と<a href="https://github.com/opentypejs/opentype.js" target="_blank">opentype.js</a>ライブラリに感謝します！</li>
 		</ul>
@@ -156,23 +157,23 @@
 			<h2>設定</h2>
 			<label for="fontNameEng">フォント名（英語）</label>
 			<input id="fontNameEng" type="text" placeholder="半角英数字で入力してください" />
-			<br />
+			<span class="note">フォントがパソコンにキャッシュされる場合があるので、テストインストールの段階では常にフォント名を番号をつけたりして変えてください。</span>
+			
 			<label for="fontNameCJK">フォント名（日本語）</label>
 			<input id="fontNameCJK" type="text" placeholder="日本語フォント名を入力してください" />
-			<br />
+			
 			<label for="scaleRateSlider">拡大率</label>
 			<input id="scaleRateSlider" type="range" min="80" max="160" value="100" />
 			<span id="scaleRateValue">100%</span>
-			<span class="note">手書きの場合、枠をはみ出さないように書くと、どうしても文字がやや小さくなりがちですが、それを補正するための拡大率です。</span>
-			<br />
+			<span class="note">手書きの場合、枠をはみ出さないように書くと、どうしても文字がやや小さくなりがちですが、拡大率を設定して文字枠のサイズを調整できます。</span>
+			
 			<label for="noFixedWidthFlag">全角文字もプロポーショナル幅</label>
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">手書きフォントの性格上、固定幅よりもプロポーショナル幅の方が自然に見える場合がありますが、縦書きとしての利用に不向きです。</span>
-			<br />
+			
 			<label for="pressureDrawingEnabled">筆圧モードの有効化（実験中）</label>
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
 			<span class="note">有効にすると、タッチペンや筆圧対応デバイスでより自然な筆圧効果を得られます。非対応のデバイスでも擬似的な筆圧効果が適用されます。</span>
-			<br />
 			<div id="pressureSettings">
 				<label for="pressureThinningSlider">筆圧の太さへの影響 (thinning)</label>
 				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.5" />
@@ -189,6 +190,7 @@
 				<span id="pressureStreamlineValue">0.4</span>
 				<span class="note">値が大きいほど、線がより流暢になりますが、筆圧変化が目立ちにくくなる場合があります。</span>
 			</div>
+			
 			<br />
 			<br />
 			<hr />

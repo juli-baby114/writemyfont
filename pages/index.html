@@ -59,7 +59,7 @@
 		#progress-container { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #fff; padding: 10px; text-align: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
 		#progress-bar { width: 80%; height: 20px; display: block; margin: 0 auto; }
 
-		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
+		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 95%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
 		.dialog h2 { margin-top: 0.2em }
 		.close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
 		.dialog-body { height: 100%; overflow: scroll  }
@@ -135,7 +135,7 @@
 
 	<div id="hint-container" class="dialog">
 		<span id="closeHintButton" class="close">×</span>
-		<h2>提示 Ver 0.31</h2>
+		<h2>提示 Ver 0.32</h2>
 		<ul id="hintContent" class="dialog-body">
 			<li>本工具由「<a href="https://zi-hi.com" target="_blank">字嗨！</a>」提供。</li>
 			<li>書寫的字表來自「<a href="https://justfont.com/jf7000" target="_blank">jf7000當務字集</a>」。</li>
@@ -145,6 +145,7 @@
 			<li>全形的英數字會使用半形英數字自動產生。</li>
 			<li>當所需的字符齊全時，系統會自動處理直排、組合文字的設定。</li>
 			<li>點擊「下載字型OTF檔案」按鈕來保存您的字型。請注意因為技術的限制，目前本系統所產生的OTF檔案，雖可勉強安裝運作，但並非正確的CID格式，可能在Adobe軟體無法正確識別為CJK字型。</li>
+			<li>由於電腦可能會快取字型檔，安裝同名的字型，可能在重新開機之前看不出效果。測試階段建議在字型名稱後面加流水號。</li>
 			<li>本服務所生成的字型檔，若使用上造成任何影響，本服務與作者不負任何責任。</li>
 			<li>轉外框功能使用<a href="https://github.com/kilobtye/potrace" target="_blank">potrace.js</a>專案。</li>
 			<li>OpenType匯出功能使用<a href="https://github.com/opentypejs/opentype.js" target="_blank">opentype.js</a>專案。</li>
@@ -157,23 +158,24 @@
 			<h2>設定</h2>
 			<label for="fontNameEng">字型英文名稱</label>
 			<input id="fontNameEng" type="text" placeholder="請輸入英文名稱" />
-			<br />
+			<span class="note">由於電腦可能會快取字型檔，安裝同名的字型，可能在重新開機之前看不出效果。測試階段建議在字型名稱後面加流水號。</span>
+			
 			<label for="fontNameCJK">字型中文名稱</label>
 			<input id="fontNameCJK" type="text" placeholder="請輸入中文名稱" />
-			<br />
+			
 			<label for="scaleRateSlider">縮放率</label>
 			<input id="scaleRateSlider" type="range" min="80" max="160" value="100" />
 			<span id="scaleRateValue">100%</span>
-			<span class="note">由於手寫為了避免超框，容易不經意把字寫得比較小。這裡可以整體放大文字倍率。</span>
-			<br />
+			<span class="note">手寫時為了避免超框，容易不經意把字寫得偏小。這裡可以調整文字框的尺寸。</span>
+			
 			<label for="noFixedWidthFlag">中文字不等寬</label>
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">設定為不等寬會更像手寫字型，但可能不適合用於直排。</span>
-			<br />
+			
 			<label for="pressureDrawingEnabled">啟用筆壓模式（測試中）</label>
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
 			<span class="note">啟用後可提供更自然的筆壓效果，適合觸控筆或支援筆壓的設備。不支援的設備也會自動模擬筆壓繪圖。</span>
-			<br />
+			
 			<div id="pressureSettings">
 				<label for="pressureThinningSlider">壓力對粗細的影響 (thinning)</label>
 				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.5" />
