@@ -257,9 +257,9 @@ $(document).ready(async function () {
     const pressureDrawing = new PressureDrawing();
     let pressureDrawingEnabled = false;
     let pressureDrawingSettings = {
-        thinning: 0.3,
-        smoothing: 0.5,
-        streamline: 0.7
+        thinning: 0.5,
+        smoothing: 0.4,
+        streamline: 0.4
     };
 
     // 更新筆壓繪圖狀態
@@ -271,9 +271,9 @@ $(document).ready(async function () {
         pressureDrawingEnabled = (enabled !== 'N') && moduleInitialized;
         
         // 載入筆壓繪圖設定
-        pressureDrawingSettings.thinning = parseFloat(await loadFromDB('pressureThinning') || 0.3);
-        pressureDrawingSettings.smoothing = parseFloat(await loadFromDB('pressureSmoothing') || 0.5);
-        pressureDrawingSettings.streamline = parseFloat(await loadFromDB('pressureStreamline') || 0.7);
+        pressureDrawingSettings.thinning = parseFloat(await loadFromDB('pressureThinning') || 0.5);
+        pressureDrawingSettings.smoothing = parseFloat(await loadFromDB('pressureSmoothing') || 0.4);
+        pressureDrawingSettings.streamline = parseFloat(await loadFromDB('pressureStreamline') || 0.4);
     }
 
     // 初始化 IndexedDB
@@ -290,13 +290,13 @@ $(document).ready(async function () {
 			await saveToDB('pressureDrawingEnabled', 'Y');
 		}
 		if (await loadFromDB('pressureThinning') === null) {
-			await saveToDB('pressureThinning', 0.3);
+			await saveToDB('pressureThinning', 0.5);
 		}
 		if (await loadFromDB('pressureSmoothing') === null) {
-			await saveToDB('pressureSmoothing', 0.5);
+			await saveToDB('pressureSmoothing', 0.4);
 		}
 		if (await loadFromDB('pressureStreamline') === null) {
-			await saveToDB('pressureStreamline', 0.7);
+			await saveToDB('pressureStreamline', 0.4);
 		}
     }).catch((error) => {
         console.error('IndexedDB 起動失敗', error);
@@ -740,15 +740,15 @@ $(document).ready(async function () {
 		const pressureEnabled = pressureEnabledSetting !== 'N'; // 預設啟用（除非明確設定為 N）
 		$('#pressureDrawingEnabled').prop('checked', pressureEnabled);
 		
-		const thinning = await loadFromDB('pressureThinning') || 0.3;
+		const thinning = await loadFromDB('pressureThinning') || 0.5;
 		$('#pressureThinningSlider').val(thinning);
 		$('#pressureThinningValue').text(thinning);
 		
-		const smoothing = await loadFromDB('pressureSmoothing') || 0.5;
+		const smoothing = await loadFromDB('pressureSmoothing') || 0.4;
 		$('#pressureSmoothingSlider').val(smoothing);
 		$('#pressureSmoothingValue').text(smoothing);
 		
-		const streamline = await loadFromDB('pressureStreamline') || 0.7;
+		const streamline = await loadFromDB('pressureStreamline') || 0.4;
 		$('#pressureStreamlineSlider').val(streamline);
 		$('#pressureStreamlineValue').text(streamline);
 		
