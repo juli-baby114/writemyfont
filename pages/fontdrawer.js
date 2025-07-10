@@ -753,7 +753,7 @@ $(document).ready(async function () {
 		$('#pressureStreamlineValue').text(streamline);
 		
 		// 控制筆壓設定區域的顯示/隱藏
-		$('#pressureSettings').toggle(pressureEnabled);
+		// $('#pressureSettings').toggle(pressureEnabled);
 
 		$('#spanAllCount').text(Object.keys(glyphMap).length);
 		$('#spanDoneCount').text(await countGlyphFromDB());
@@ -778,7 +778,7 @@ $(document).ready(async function () {
 	$('#pressureDrawingEnabled').on('change', async function () { 
 		const enabled = $(this).prop('checked');
 		saveToDB('pressureDrawingEnabled', enabled ? 'Y' : 'N');
-		$('#pressureSettings').toggle(enabled);
+		//$('#pressureSettings').toggle(enabled);
 		// 立即更新筆壓繪圖狀態
 		await updatePressureDrawingStatus();
 	});

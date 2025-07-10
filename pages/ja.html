@@ -41,13 +41,6 @@
 			canvas { width: 320px; height: 320px  }
 		}
 
-		/* 九宮格底圖樣式 */
-		#gridCanvas {
-			background-image: url('grid.png'); /* 替換為您的九宮格底圖 */
-			background-size: cover;
-			background-repeat: no-repeat;
-			
-		}
         #gridCanvas {  z-index: 0 } /* 九宮格底圖在下方 */
         #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 1 } /* 繪圖畫布在上方 */
 
@@ -80,6 +73,7 @@
 		#settings-container input[type="range"] { width: 80%; vertical-align: middle; }
 		#settings-container input[type="checkbox"] { width: 2em; height: 2em }
 		#settings-container .note { display: block; color: #ccc }
+		#pressureSettings { display: none; /*margin-left: 20px;*/ }
 
 		#hintContent { padding: 0 1.2em }
 		#hintContent li { margin: 10px 0; line-height: 1.6; }
@@ -175,12 +169,11 @@
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">手書きフォントの性格上、固定幅よりもプロポーショナル幅の方が自然に見える場合がありますが、縦書きとしての利用に不向きです。</span>
 			<br />
-			<br />
-			<label for="pressureDrawingEnabled">筆圧/模擬筆圧描画システムを有効化</label>
+			<label for="pressureDrawingEnabled">筆圧モードの有効化</label>
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
-			<span class="note">有効にすると、タッチペンや筆圧対応デバイスでより自然な筆圧効果を得られます。筆圧不対応の設備でも自動的に筆圧繪圖を模擬します。</span>
+			<span class="note">有効にすると、タッチペンや筆圧対応デバイスでより自然な筆圧効果を得られます。非対応のデバイスでも擬似的な筆圧効果が適用されます。</span>
 			<br />
-			<div id="pressureSettings" style="margin-left: 20px; display: none;">
+			<div id="pressureSettings">
 				<label for="pressureThinningSlider">筆圧の太さへの影響 (thinning)</label>
 				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.5" />
 				<span id="pressureThinningValue">0.5</span>

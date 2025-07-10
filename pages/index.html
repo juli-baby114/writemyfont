@@ -42,13 +42,6 @@
 			canvas { width: 320px; height: 320px; touch-action: none; }
 		}
 
-		/* 九宮格底圖樣式 */
-		#gridCanvas {
-			background-image: url('grid.png'); /* 替換為您的九宮格底圖 */
-			background-size: cover;
-			background-repeat: no-repeat;
-			
-		}
         #gridCanvas {  z-index: 0 } /* 九宮格底圖在下方 */
         #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 1 } /* 繪圖畫布在上方 */
 
@@ -81,6 +74,7 @@
 		#settings-container input[type="range"] { width: 80%; vertical-align: middle; }
 		#settings-container input[type="checkbox"] { width: 2em; height: 2em }
 		#settings-container .note { display: block; color: #ccc }
+		#pressureSettings { display: none; /*margin-left: 20px;*/ }
 
 		#hintContent { padding: 0 1.2em }
 		#hintContent li { margin: 10px 0; line-height: 1.6; }
@@ -176,12 +170,11 @@
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">設定為不等寬會更像手寫字型，但可能不適合用於直排。</span>
 			<br />
-			<br />
 			<label for="pressureDrawingEnabled">啟用筆壓/模擬筆壓繪圖系統</label>
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
 			<span class="note">啟用後可提供更自然的筆壓效果，適合觸控筆或支援筆壓的設備。不支援的設備也會自動模擬筆壓繪圖。</span>
 			<br />
-			<div id="pressureSettings" style="margin-left: 20px; display: none;">
+			<div id="pressureSettings">
 				<label for="pressureThinningSlider">壓力對粗細的影響 (thinning)</label>
 				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.5" />
 				<span id="pressureThinningValue">0.5</span>
