@@ -139,7 +139,7 @@ result_tmp.each { |k, v|
 	end
 }
 
-f = File.open('jglyphlist.js', 'w:utf-8')
+f = File.open('../pages/jglyphlist.js', 'w:utf-8')
 f.puts "const glyphMap = #{JSON.pretty_generate($glist)};"
 #f.puts "const glyphList = #{JSON.pretty_generate(result)};"
 #f.puts "const glyphMap = #{$glist.to_json};"
