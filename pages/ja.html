@@ -41,13 +41,6 @@
 			canvas { width: 320px; height: 320px  }
 		}
 
-		/* 九宮格底圖樣式 */
-		#gridCanvas {
-			background-image: url('grid.png'); /* 替換為您的九宮格底圖 */
-			background-size: cover;
-			background-repeat: no-repeat;
-			
-		}
         #gridCanvas {  z-index: 0 } /* 九宮格底圖在下方 */
         #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 1 } /* 繪圖畫布在上方 */
 
@@ -68,7 +61,7 @@
 		.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
 		.dialog h2 { margin-top: 0.2em }
 		.close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
-		.dialog-body { height: 84%; overflow: scroll  }
+		.dialog-body { height: 100%; overflow: scroll  }
 
 		#listup-body img { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 		#listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: LessonOne, sans-serif; overflow: hidden; }
@@ -80,6 +73,7 @@
 		#settings-container input[type="range"] { width: 80%; vertical-align: middle; }
 		#settings-container input[type="checkbox"] { width: 2em; height: 2em }
 		#settings-container .note { display: block; color: #ccc }
+		#pressureSettings { display: none; /*margin-left: 20px;*/ }
 
 		#hintContent { padding: 0 1.2em }
 		#hintContent li { margin: 10px 0; line-height: 1.6; }
@@ -140,7 +134,7 @@
 
 	<div id="hint-container" class="dialog">
 		<span id="closeHintButton" class="close">×</span>
-		<h2>ヒント Ver 0.26</h2>
+		<h2>ヒント Ver 0.30</h2>
 		<ul id="hintContent" class="dialog-body">
 			<li>このツールは「<a href="https://x.com/buttaiwan" target="_blank">@buttaiwan</a>」が作りました（半分くらいはAIに放り投げたがｗ）。</li>
 			<li>すべてのデータはブラウザに保存されるため、未完成のフォントは定期的にバックアップすることをおすすめします。</li>
@@ -175,6 +169,26 @@
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">手書きフォントの性格上、固定幅よりもプロポーショナル幅の方が自然に見える場合がありますが、縦書きとしての利用に不向きです。</span>
 			<br />
+			<label for="pressureDrawingEnabled">筆圧モードの有効化</label>
+			<input id="pressureDrawingEnabled" type="checkbox" checked />
+			<span class="note">有効にすると、タッチペンや筆圧対応デバイスでより自然な筆圧効果を得られます。非対応のデバイスでも擬似的な筆圧効果が適用されます。</span>
+			<br />
+			<div id="pressureSettings">
+				<label for="pressureThinningSlider">筆圧の太さへの影響 (thinning)</label>
+				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.5" />
+				<span id="pressureThinningValue">0.5</span>
+				<span class="note">値が大きいほど、筆圧変化が線の太さに与える影響が大きくなります。</span>
+				<br />
+				<label for="pressureSmoothingSlider">スムージング程度 (smoothing)</label>
+				<input id="pressureSmoothingSlider" type="range" min="0" max="1" step="0.1" value="0.4" />
+				<span id="pressureSmoothingValue">0.4</span>
+				<span class="note">値が大きいほど、線がより滑らかになります。</span>
+				<br />
+				<label for="pressureStreamlineSlider">ストリームライン程度 (streamline)</label>
+				<input id="pressureStreamlineSlider" type="range" min="0" max="1" step="0.1" value="0.4" />
+				<span id="pressureStreamlineValue">0.4</span>
+				<span class="note">値が大きいほど、線がより流暢になりますが、筆圧変化が目立ちにくくなる場合があります。</span>
+			</div>
 			<br />
 			<br />
 			<hr />
@@ -208,6 +222,7 @@
 			clearDone: '削除しました'
 		};
 	</script>
+    <script src="pressure-drawing.js"></script>
     <script src="jglyphlist.js"></script>
     <script src="fontdrawer.js"></script>
 </body>
