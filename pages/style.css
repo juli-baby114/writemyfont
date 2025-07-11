@@ -55,10 +55,11 @@ canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch
 #progress-container { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #fff; padding: 10px; text-align: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
 #progress-bar { width: 80%; height: 20px; display: block; margin: 0 auto; }
 
-.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 95%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
-.dialog h2 { margin-top: 0.2em }
+.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 0 5% }
+.dialog h2 { margin-top: 1em }
 .close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
-.dialog-body { height: 95%; overflow: scroll  }
+.dialog .dummy { display: block; clear: both; height: 5em }
+.dialog-body { height: 100%; overflow: scroll }
 
 #listup-body img { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 #listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: GenYoExt, LessonOne, sans-serif; overflow: hidden; }

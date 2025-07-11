@@ -126,8 +126,10 @@ def read_list fn, ctype, col=nil
 	#list.size > 0 ? list : nil
 end
 
-baselist = ('a'..'z').to_a + ('A'..'Z').to_a
-baselist += ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'comma', 'period', 'uni02CA', 'caron', 'uni02CB', 'dotaccent']
+verybaselist = ('a'..'z').to_a + ('A'..'Z').to_a
+verybaselist += ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'comma', 'period', 'hyphen']
+
+baselist = verybaselist + ['uni02CA', 'caron', 'uni02CB', 'dotaccent']
 ('ㄅ'..'ㄩ').to_a.each { |c| baselist << sprintf('uni%04X', c.ord) }
 '一二三四五六七八九十微風迎客軟語伴茶，。'.split(//).each { |c| baselist << sprintf('uni%04X', c.ord) }
 
@@ -145,6 +147,10 @@ result_tmp = {
 	'命名包-符號' => read_list('sym_ext.txt', :S, 9),
 	'補充符號包' => read_list('sym_ext.txt', :S, 10)
 }
+
+result_tmp['附表：台文全羅'] = verybaselist + result_tmp['本土包-符號']
+result_tmp['附表：心經'] = []
+'般若波羅蜜多心經觀自在菩薩行深般若波羅蜜多時照見五蘊皆空度一切苦厄舍利子色不異空空不異色色即是空空即是色受想行識亦復如是舍利子是諸法空相不生不滅不垢不淨不增不減是故空中無色無受想行識無眼耳鼻舌身意無色聲香味觸法無眼界乃至無意識界無無明亦無無明盡乃至無老死亦無老死盡無苦集滅道無智亦無得以無所得故菩提薩埵依般若波羅蜜多故心無罣礙無罣礙故無有恐怖遠離顛倒夢想究竟涅槃三世諸佛依般若波羅蜜多故得阿耨多羅三藐三菩提故知般若波羅蜜多是大神咒是大明咒是無上咒是無等等咒能除一切苦真實不虛故說般若波羅蜜多咒即說咒曰揭諦揭諦波羅揭諦波羅僧揭諦菩提薩婆訶'.split(//).each { |c| result_tmp['附表：心經'] << sprintf('uni%04X', c.ord) }
 
 $glist = $glist.sort_by { |k, v| v.sort_val }.to_h
 

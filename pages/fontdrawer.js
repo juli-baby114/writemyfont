@@ -856,6 +856,8 @@ $(document).ready(async function () {
 				$('#listup-body').append(cell);
 			}
 		}
+
+		$('<p class="dummy"><p>').appendTo($('#listup-body'));
     });
 
     // 關閉設定畫面
