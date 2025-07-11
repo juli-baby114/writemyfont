@@ -1,6 +1,7 @@
+const version = '0.37'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
-const pressureDelta = 1.5;		// 筆壓模式跟一般模式的筆寬差異倍數
+const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數
 
 const dbName = fdrawer.dbName || 'FontDrawerDB'; // 使用 fdrawer.dbName，如果未定義則使用預設值
 const storeName = 'FontData';
@@ -869,6 +870,7 @@ $(document).ready(async function () {
 	// 顯示提示畫面
 	$('#hintButton').on('click', function () {
 		$('#hint-container').show();
+		$('#version').text(version);
 	});
 
 	// 關閉設定畫面
