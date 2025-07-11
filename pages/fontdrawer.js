@@ -1,5 +1,6 @@
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
+const pressureDelta = 1.5;		// 筆壓模式跟一般模式的筆寬差異倍數
 
 const dbName = fdrawer.dbName || 'FontDrawerDB'; // 使用 fdrawer.dbName，如果未定義則使用預設值
 const storeName = 'FontData';
@@ -473,7 +474,7 @@ $(document).ready(async function () {
             
             // 生成即時預覽筆跡
             const previewStroke = pressureDrawing.createPreviewStroke({
-                size: lineWidth,
+                size: lineWidth * pressureDelta,
                 thinning: pressureDrawingSettings.thinning,
                 smoothing: pressureDrawingSettings.smoothing,
                 streamline: pressureDrawingSettings.streamline
@@ -510,7 +511,7 @@ $(document).ready(async function () {
         if (pressureDrawingEnabled) {
             // 使用筆壓繪圖系統：生成最終筆跡並繪製
             const finalStroke = pressureDrawing.finishStroke({
-                size: lineWidth,
+                size: lineWidth * pressureDelta,
                 thinning: pressureDrawingSettings.thinning,
                 smoothing: pressureDrawingSettings.smoothing,
                 streamline: pressureDrawingSettings.streamline
