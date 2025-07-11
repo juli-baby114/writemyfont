@@ -183,8 +183,16 @@ function initListSelect($listSelect) {
 }
 
 async function createFont(glyphs, gidMap, verts, ccmps) {
-	const fontNameEng = await loadFromDB('fontNameEng') || 'MyFreehandFont';
-	const fontNameCJK = await loadFromDB('fontNameCJK') || fdrawer.fontNameCJK;
+	const testMode = await loadFromDB('saveAsTester') || 'Y';
+	var fontNameEng = await loadFromDB('fontNameEng') || 'MyFreehandFont';
+	var fontNameCJK = await loadFromDB('fontNameCJK') || fdrawer.fontNameCJK;
+
+	if (testMode == 'Y') {
+		var testSerialNo = await loadFromDB('testSerialNo') || 1;
+		fontNameEng += testSerialNo;
+		fontNameCJK += testSerialNo;
+		saveToDB('testSerialNo', testSerialNo*1 + 1); // 更新測試序號
+	}
 	
 	const font = new opentype.Font({
 		familyName: fontNameEng,
@@ -298,6 +306,16 @@ $(document).ready(async function () {
 		if (await loadFromDB('pressureStreamline') === null) {
 			await saveToDB('pressureStreamline', 0.4);
 		}
+
+		if (await loadFromDB('notNewFlag') == null) {
+			$('#settingButton').click();
+			await saveToDB('notNewFlag', 'Y'); // 設定為已經不是新文件
+		}
+
+		var saveAsTest = await loadFromDB('saveAsTester') || 'Y';
+		$('#saveAsTester').prop('checked', saveAsTest == 'Y'); // 設定是否為測試儲存
+		$('#spanDoneCount').text(await countGlyphFromDB());
+
     }).catch((error) => {
         console.error('IndexedDB 起動失敗', error);
     });
@@ -308,7 +326,6 @@ $(document).ready(async function () {
 	let nowGlyph = null;
 
 	initListSelect($listSelect);
-
 
 	// 切換列表
 	$listSelect.on('change', function () {
@@ -358,7 +375,7 @@ $(document).ready(async function () {
 			await deleteFromDB('s_' + nowGlyph);
 		}
 		
-		//console.log(nowGlyph, dataURL, svgData);
+		$('#spanDoneCount').text(await countGlyphFromDB());
 	}
 
 	// 修改讀取畫布的功能
@@ -625,6 +642,10 @@ $(document).ready(async function () {
 		return isAdw ? pad : width + pad*2; // 返回調整後的寬度
 	}
 
+	$('#saveAsTester').on('click', async function () {
+		await saveToDB('saveAsTester', this.checked ? 'Y' : 'N'); // 儲存是否為測試儲存
+	});
+
 	// 儲存字型檔
     $('#saveButton').on('click', async function () {
 		// 顯示進度條
@@ -727,6 +748,11 @@ $(document).ready(async function () {
 
     // 顯示設定畫面
     $('#settingButton').on('click', async function () {
+		var firstTime = (await loadFromDB('notNewFlag') == null);
+		$('#settings-title').text(firstTime ? fdrawer.welcomeTitle : fdrawer.settingsTitle);
+		$('#span-welcome').toggle(firstTime);
+		$('#div-backup').toggle(!firstTime);
+
         $('#settings-container').show();
 		$('#fontNameEng').val(await loadFromDB('fontNameEng') || 'MyFreehandFont');
 		$('#fontNameCJK').val(await loadFromDB('fontNameCJK') || fdrawer.fontNameCJK);
@@ -756,7 +782,6 @@ $(document).ready(async function () {
 		// $('#pressureSettings').toggle(pressureEnabled);
 
 		$('#spanAllCount').text(Object.keys(glyphMap).length);
-		$('#spanDoneCount').text(await countGlyphFromDB());
     });
 
     // 關閉設定畫面

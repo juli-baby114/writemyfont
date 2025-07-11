@@ -1,0 +1,77 @@
+body {
+	margin: 58px 0 0 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	/*height: 80vh;*/
+	background-color: #f0f0f0;
+	font-family: sans-serif;
+	overflow: hidden;
+	user-select: none; /* 禁用文字選擇 */
+	-webkit-touch-callout: none; /* 禁用長按彈出選單 */
+	-webkit-user-select: none; /* 禁用文字選擇 */
+	-webkit-tap-highlight-color: transparent; /* 移除點擊高亮效果 */  
+}
+button { display: inline-block; margin: 2px 0; padding: 4px 6px; font-size: 20px }
+select { margin: 2px 0; padding: 4px 6px; font-size: 16px }
+span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size: 18px; border: 1px solid #666; border-radius: 10px; cursor: pointer; background-color: #eee; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.1) }
+
+@font-face { font-family: LessonOne; src: url('LessonOne-Regular.woff'); font-weight: normal; font-style: normal; }
+@font-face { font-family: GenYoExt; src: url('GenYoExt3-R.woff'); font-weight: normal; font-style: normal; }
+
+#demo-container { margin-bottom: 5px; width: 360px; position: relative; color: #1123c4; text-align: center; font-family: sans-serif; height: 5.6em; margin: 10px auto }
+#demo-container span { display: block; line-height: 1.2; }
+#glyphName { font-family: Consolas, monospace; color: #aaa }
+#demo-container #charSeq { font-size: 2.6em; line-height: 1; margin: 0 auto 10px auto; width: 1em; font-family: GenYoExt, LessonOne, sans-serif; border: 1px solid #aaa; }
+#demo-container #charSeq.vert { writing-mode: vertical-rl; text-orientation: mixed; font-feature-settings: "vert" }
+#prevButton { font-size: 2.5em; position: absolute; left: 0; top: 0; border: 0; background: transparent; box-shadow: none; }
+#nextButton { font-size: 2.5em; position: absolute; right: 0; top: 0; border: 0; background: transparent; box-shadow: none }
+
+#canvas-container { position: relative; width: 360px; height: 360px; border: 1px solid #888; background-color: #fff;}
+canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch-action: none; }
+@media screen and ((max-height: 700px) or (max-width: 380px)) {
+	#canvas-container { width: 320px; height: 320px }
+	canvas { width: 320px; height: 320px; touch-action: none; }
+}
+
+#gridCanvas {  z-index: 0 } /* 九宮格底圖在下方 */
+#drawingCanvas { position: absolute; top: 0; left: 0; z-index: 1 } /* 繪圖畫布在上方 */
+
+#slider-container { text-align: center; margin: 10px 0 }
+#slider-container .use { background-color: #ffe ;}
+#lineWidthSlider { margin-left: 15px; width: 180px; display: inline-block; vertical-align: middle; }
+#slider-container { font-family: sans-serif; }
+
+#button-container { display: flex; gap: 5px; justify-content: center }
+#button-container span.butt { padding: 6px 8px; font-size: 22px; }
+
+#list-container { display: block; position: fixed; top: 0; left: 0; width: 100%; justify-content: center; background-color: #fff; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; z-index: 1; }
+
+#navi-container { display: flex; gap: 10px; position: fixed; bottom: 0; left: 0; width: 100%; justify-content: center; background-color: #fff; padding: 10px; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
+#navi-container #spanDoneCount { padding-top: 12px; color: #999; width: 3em; text-align: center; }
+#navi-container #label-tester { text-align: center; font-size: 0.8em }
+#navi-container #label-tester input { width: 1.2em; height: 1.2em }
+#progress-container { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #fff; padding: 10px; text-align: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
+#progress-bar { width: 80%; height: 20px; display: block; margin: 0 auto; }
+
+.dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 95%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 5% }
+.dialog h2 { margin-top: 0.2em }
+.close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
+.dialog-body { height: 95%; overflow: scroll  }
+
+#listup-body img { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
+#listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: GenYoExt, LessonOne, sans-serif; overflow: hidden; }
+#listup-body span.vert { writing-mode: vertical-rl; text-orientation: mixed; font-feature-settings: "vert" }
+
+#settings-container label { display: block; font-size: 1.2em; margin: 0.8em 0 0.2em 0; }
+#settings-container input[type="text"] { width: 80%; padding: 3px; font-size: 1.2em; }
+#settings-container input[type="file"] { width: 90%; padding: 3px; font-size: 1.2em; }
+#settings-container input[type="range"] { width: 80%; vertical-align: middle; }
+#settings-container input[type="checkbox"] { width: 2em; height: 2em }
+#settings-container .note { display: block; color: #ccc }
+#pressureSettings { display: none; /*margin-left: 20px;*/ }
+
+#hintContent { padding: 0 1.2em }
+#hintContent li { margin: 10px 0; line-height: 1.6; }
+#hintContent a { color: #ff0 !important; text-decoration: underline; }
