@@ -1,4 +1,4 @@
-const version = '0.37'; // 版本號
+const version = '0.38'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數
@@ -602,7 +602,6 @@ $(document).ready(async function () {
 				Potrace.process(function () {
 					var svgData = Potrace.getSVG(2); // 取得 SVG 資料
 					svgData = svgData.replace(/^.+path d="/, '').replace(/".+$/, '');
-					//await saveToDB('s_' + gname, svgData);
 					resolve(svgData);
 				});
 			};
@@ -839,12 +838,20 @@ $(document).ready(async function () {
         $('#listup-container').show();
 		$('#listup-body').empty(); 		// 清空
 
+		// 計算 viewBox
+		var scale = await loadFromDB('scaleRate') || 100;
+		scale = parseInt(scale, 10) / 100; // 轉換為小數
+		var emSize = Math.round(upm / scale);
+		var emOff = Math.round((upm - emSize) / 2);
+		var viewBox = `${emOff} ${emOff} ${emSize} ${emSize}`;
+
 		for (let i in nowList) {
 			var gname = nowList[i];
-			var drawData = await loadFromDB('g_' + gname);
-			if (drawData) {		// 已寫過
+			//var drawData = await loadFromDB('g_' + gname);
+			var svgData = await loadFromDB('s_' + gname);
+			if (svgData) {		// 已寫過
 				$('#listup-body').append(
-					$('<img>').attr('src', drawData).data('index', i).on('click', function () {
+					$('<svg version="1.1" viewBox="' + viewBox + '">').html('<path d="' + svgData + '" stroke="#000" fill="#000"></path>').data('index', i).on('click', function () {
 						setGlyph($(this).data('index')*1);
 						$('#listup-container').hide();
 					})

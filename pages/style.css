@@ -61,7 +61,7 @@ canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch
 .dialog .dummy { display: block; clear: both; height: 5em }
 .dialog-body { height: 100%; overflow: scroll }
 
-#listup-body img { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
+#listup-body svg { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 #listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: GenYoExt, LessonOne, sans-serif; overflow: hidden; }
 #listup-body span.vert { writing-mode: vertical-rl; text-orientation: mixed; font-feature-settings: "vert" }
 
