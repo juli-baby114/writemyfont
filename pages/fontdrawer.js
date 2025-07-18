@@ -1,4 +1,4 @@
-const version = '0.38'; // 版本號
+const version = '0.39'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數
@@ -366,15 +366,16 @@ $(document).ready(async function () {
 
 	// 儲存畫布的功能
 	async function saveToLocalDB() {
+		var currentGlyph = nowGlyph;	// 嘗試解決非同步操作導致的 Race Condition
 		const dataURL = canvas.toDataURL();
-		const svgData = await toSVG(nowGlyph, dataURL); // SVG 版本
+		const svgData = await toSVG(currentGlyph, dataURL); // SVG 版本
 
 		if (svgData && svgData != '') {
-			await saveToDB('g_' + nowGlyph, dataURL);
-			await saveToDB('s_' + nowGlyph, svgData);
+			await saveToDB('g_' + currentGlyph, dataURL);
+			await saveToDB('s_' + currentGlyph, svgData);
 		} else {
-			await deleteFromDB('g_' + nowGlyph);
-			await deleteFromDB('s_' + nowGlyph);
+			await deleteFromDB('g_' + currentGlyph);
+			await deleteFromDB('s_' + currentGlyph);
 		}
 		
 		$('#spanDoneCount').text(await countGlyphFromDB());
