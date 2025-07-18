@@ -997,3 +997,13 @@ $(document).ready(async function () {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    // 判斷是否在 in-app browser 中
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    if (/FBAN|FBAV|Instagram|Line|Threads/i.test(userAgent)) {
+        // 如果是 Facebook、Instagram 或 Line 的 in-app browser
+        alert(fdrawer.inAppNotice);
+    }
+});
