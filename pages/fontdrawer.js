@@ -1,4 +1,4 @@
-const version = '0.39'; // 版本號
+const version = '0.40'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數
@@ -432,7 +432,8 @@ $(document).ready(async function () {
     // 開始繪製
     $canvas.on('mousedown touchstart pointerdown', function (event) {
         isDrawing = true;
-		undoStack.push(canvas.toDataURL()); // 儲存當前畫布狀態到 undoStack
+		var png = canvas.toDataURL();
+		if (png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
         const { x, y } = getCanvasCoordinates(event);
         
         if (pressureDrawingEnabled) {
@@ -553,6 +554,14 @@ $(document).ready(async function () {
         }
     });
 
+	// 清除畫布的功能
+	$('#clearButton').on('click', async function () {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		undoStack.length = 0; // 清空復原堆疊
+		await deleteFromDB('g_' + nowGlyph); // 清除 IndexedDB 中的資料
+		await deleteFromDB('s_' + nowGlyph); // 清除 IndexedDB 中的資料
+	});
+
 	async function moveGlyph(xoff, yoff) {
 		const savedCanvas = await loadFromDB('g_' + nowGlyph);
 		if (!savedCanvas) return; // 如果沒有儲存的畫布，則不進行任何操作
@@ -571,6 +580,48 @@ $(document).ready(async function () {
 	$('#moveRightButton').on('click', function () { moveGlyph(10, 0); }); // 向右移動 10px
 	$('#moveUpButton').on('click', function () { moveGlyph(0, -10); }); // 向上移動 10px
 	$('#moveDownButton').on('click', function () { moveGlyph(0, 10); }); // 向下移動 10px
+
+	// 支援鍵盤方向鍵操作
+	$(document).on('keydown', function (event) {
+		switch (event.key) {
+			case 'ArrowLeft': // 左方向鍵
+				moveGlyph(-10, 0);
+				break;
+			case 'ArrowRight': // 右方向鍵
+				moveGlyph(10, 0);
+				break;
+			case 'ArrowUp': // 上方向鍵
+				moveGlyph(0, -10);
+				break;
+			case 'ArrowDown': // 下方向鍵
+				moveGlyph(0, 10);
+				break;
+			case 'z': // Z 鍵 - 復原
+				$('#undoButton').trigger('click');
+				break;
+			case 'v': // V 鍵 - 畫筆
+				$('#penButton').trigger('click');
+				break;
+			case 'c': // V 鍵 - 橡皮擦
+				$('#eraserButton').trigger('click');
+				break;
+			case 'x': // X 鍵 - 清除
+				$('#clearButton').trigger('click');
+				break;
+			case 'PageDown': 	// PageDown 鍵 - 下一步
+			case ']': 			// "]" 鍵 - 下一步
+				$('#nextButton').trigger('click');
+				break;
+			case 'PageUp': 		// PageUp 鍵 - 上一步
+			case '[': 			// "]" 鍵 - 下一步
+				$('#prevButton').trigger('click');
+				break;
+			case 'Enter': 		// Enter 鍵 - 下一步 / 同時按shift - 上一步
+			case ' ': 			// Space 鍵 - 下一步 / 同時按shift - 上一步
+				$(event.shiftKey ? '#prevButton' : '#nextButton').trigger('click');
+				break;
+		}
+	});
 
     // 更新進度條
     function updateProgress(current, total) {
@@ -739,14 +790,6 @@ $(document).ready(async function () {
 		$naviContainer.show();
 		$progressContainer.hide();
 	});
-
-    // 清除畫布的功能
-    $('#clearButton').on('click', async function () {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        undoStack.length = 0; // 清空復原堆疊
-        await deleteFromDB('g_' + nowGlyph); // 清除 IndexedDB 中的資料
-        await deleteFromDB('s_' + nowGlyph); // 清除 IndexedDB 中的資料
-    });
 
     // 顯示設定畫面
     $('#settingButton').on('click', async function () {
