@@ -1,4 +1,4 @@
-const version = '0.48'; // 版本號
+const version = '0.481'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 let brushMode = 0;
@@ -480,15 +480,15 @@ $(document).ready(async function () {
 		const { x, y } = getCanvasCoordinates(event);
 		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
 
-		var png = canvas.toDataURL();
-		if (!isDrawing && png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
-		isDrawing = true;
-
 		var pressureVal = event.originalEvent.pressure;
 		if (hasPressureValue && typeof(pressureVal) == 'undefined') return; // 如果已經有筆壓值，且當前事件沒有筆壓值，則不繪製
 		if (typeof(pressureVal) != 'undefined') hasPressureValue = true;
 		if (hasPressureValue && pressureVal > 0 && pressureVal < 0.05) return;	// 忽略太微弱的筆觸
 		if (typeof(pressureVal) == 'undefined' || pressureVal == 1 || pressureVal == 0) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5
+
+		var png = canvas.toDataURL();
+		if (!isDrawing && png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
+		isDrawing = true;
 
 		//console.log(event, pressureVal, event.originalEvent.pointerType);
 
