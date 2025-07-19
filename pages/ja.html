@@ -27,8 +27,8 @@
     </div>
 
 	<div id="slider-container">
-		<span class="butt use" id="penButton">🖌️</span>
-		<span class="butt" id="eraserButton">🚿</span>
+		<div id="brushSelector"></div><div id="pressureButton" class="off"></div>
+		<span class="butt use" id="penButton">🖌️</span><span class="butt" id="eraserButton">🚿</span>
 		<input id="lineWidthSlider" type="range" min="2" max="30" value="12" />
 		<label for="lineWidthSlider"><span id="lineWidthValue">12</span></label>
 	</div>
@@ -100,25 +100,9 @@
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">手書きフォントの性格上、固定幅よりもプロポーショナル幅の方が自然に見える場合がありますが、縦書きとしての利用に不向きです。</span>
 			
-			<label for="pressureDrawingEnabled">筆圧モードの有効化（実験中）</label>
+			<label for="pressureDrawingEnabled">旧筆圧モードの有効化</label>
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
-			<span class="note">有効にすると、タッチペンや筆圧対応デバイスでより自然な筆圧効果を得られます。非対応のデバイスでも擬似的な筆圧効果が適用されます。</span>
-			<div id="pressureSettings">
-				<label for="pressureThinningSlider">筆圧の太さへの影響 (thinning)</label>
-				<input id="pressureThinningSlider" type="range" min="0" max="1" step="0.1" value="0.5" />
-				<span id="pressureThinningValue">0.5</span>
-				<span class="note">値が大きいほど、筆圧変化が線の太さに与える影響が大きくなります。</span>
-				<br />
-				<label for="pressureSmoothingSlider">スムージング程度 (smoothing)</label>
-				<input id="pressureSmoothingSlider" type="range" min="0" max="1" step="0.1" value="0.4" />
-				<span id="pressureSmoothingValue">0.4</span>
-				<span class="note">値が大きいほど、線がより滑らかになります。</span>
-				<br />
-				<label for="pressureStreamlineSlider">ストリームライン程度 (streamline)</label>
-				<input id="pressureStreamlineSlider" type="range" min="0" max="1" step="0.1" value="0.4" />
-				<span id="pressureStreamlineValue">0.4</span>
-				<span class="note">値が大きいほど、線がより流暢になりますが、筆圧変化が目立ちにくくなる場合があります。</span>
-			</div>
+			<span class="note">旧筆圧モードは筆圧非対応デバイスでも疑似的な筆圧を実現しますが、ブラシに対応しません。</span>
 			
 			<div id="div-backup">
 				<br />
