@@ -59,27 +59,26 @@ canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch
 #navi-container #spanDoneCount { padding-top: 12px; color: #999; width: 3em; text-align: center; }
 #navi-container #label-tester { text-align: center; font-size: 0.8em }
 #navi-container #label-tester input { width: 1.2em; height: 1.2em }
-#progress-container { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #fff; padding: 10px; text-align: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
+#progress-container { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #fff; padding: 10px; text-align: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); z-index: 1000; }
 #progress-bar { width: 80%; height: 20px; display: block; margin: 0 auto; }
 
 .dialog { display: none; position: fixed; top: 0; left: 0; width: 90%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: #fff; z-index: 999; text-align: left; padding: 0 5% }
 .dialog h2 { margin-top: 1em }
+.dialog h3 { display: block; font-size: 1.2em; margin: 0.8em 0 0.2em 0; }
+.dialog a { color: #ff0 !important; text-decoration: underline; }
+.dialog input[type="text"] { width: 80%; padding: 3px; font-size: 1.2em; }
+.dialog input[type="file"] { width: 90%; padding: 3px; font-size: 1.2em; }
+.dialog input[type="range"] { width: 80%; vertical-align: middle; }
+.dialog input[type="checkbox"] { width: 2em; height: 2em; vertical-align: middle }
+.dialog .note { display: block; color: #ccc }
+
 .close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
-.dialog .dummy { display: block; clear: both; height: 5em }
+.dialog .dummy { display: block; clear: both; height: 6em }
 .dialog-body { height: 100%; overflow: scroll }
 
 #listup-body svg { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 #listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: GenYoExt, LessonOne, sans-serif; overflow: hidden; }
 #listup-body span.vert { writing-mode: vertical-rl; text-orientation: mixed; font-feature-settings: "vert" }
 
-#settings-container label { display: block; font-size: 1.2em; margin: 0.8em 0 0.2em 0; }
-#settings-container input[type="text"] { width: 80%; padding: 3px; font-size: 1.2em; }
-#settings-container input[type="file"] { width: 90%; padding: 3px; font-size: 1.2em; }
-#settings-container input[type="range"] { width: 80%; vertical-align: middle; }
-#settings-container input[type="checkbox"] { width: 2em; height: 2em }
-#settings-container .note { display: block; color: #ccc }
-#pressureSettings { display: none; /*margin-left: 20px;*/ }
-
 #hintContent { padding: 0 1.2em }
 #hintContent li { margin: 10px 0; line-height: 1.6; }
-#hintContent a { color: #ff0 !important; text-decoration: underline; }

@@ -1,4 +1,4 @@
-const version = '0.50'; // 版本號
+const version = '0.52'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 let brushMode = 0;
@@ -476,7 +476,9 @@ $(document).ready(async function () {
 
     // 開始繪製
     //$canvas.on('mousedown touchstart pointerdown', function (event) {
-	$canvas.on('pointerdown', function (event) {
+	$canvas.on('mousedown touchstart pointerdown', function (event) {
+		if (pressureMode && !event.type.includes('pointer')) return;		// 筆壓模式只處理 pointer 事件
+
 		const { x, y } = getCanvasCoordinates(event);
 		if (events.length > 1000) events.splice(0, events.length - 200);
 		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
@@ -522,7 +524,8 @@ $(document).ready(async function () {
 	});
 
     // 繪製中
-	$canvas.on('pointermove', function (event) {
+	$canvas.on('mousemove touchmove pointermove', function (event) {
+		if (pressureMode && !event.type.includes('pointer')) return;		// 筆壓模式只處理 pointer 事件
 		if (!isDrawing) return;
 
 	    const { x, y } = getCanvasCoordinates(event);
@@ -607,7 +610,6 @@ $(document).ready(async function () {
 
     // 停止繪製
     $canvas.on('mouseup mouseleave touchend pointerup pointerleave', function (event) {
-	//$canvas.on('pointerup pointerleave', function (event) {
         if (!isDrawing) return;
         isDrawing = false;
 		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
@@ -809,7 +811,7 @@ $(document).ready(async function () {
 	});
 
 	// 儲存字型檔
-    $('#saveButton').on('click', async function () {
+    $('#downloadFontButton').on('click', async function () {
 		// 顯示進度條
 		$naviContainer.hide();
 		$progressContainer.show();
@@ -919,8 +921,6 @@ $(document).ready(async function () {
 		const pressureEnabledSetting = await loadFromDB('pressureDrawingEnabled');
 		const pressureEnabled = pressureEnabledSetting == 'Y';
 		$('#pressureDrawingEnabled').prop('checked', pressureEnabled);
-		
-		$('#spanAllCount').text(Object.keys(glyphMap).length);
     });
 
     // 關閉設定畫面
@@ -997,10 +997,20 @@ $(document).ready(async function () {
 		$('#version').text(version);
 	});
 
-	// 關閉設定畫面
+	// 關閉提示畫面
 	$('#closeHintButton').on('click', function () {
 		$('#hint-container').hide();
 	});
+
+    // 顯示下載畫面
+    $('#downloadButton').on('click', async function () {
+        $('#download-container').show();
+    });
+
+    // 關閉下載畫面
+    $('#closeDownloadButton').on('click', function () {
+        $('#download-container').hide();
+    });
 
     // 取得滑鼠或觸控座標
     function getCanvasCoordinates(event) {
@@ -1011,26 +1021,6 @@ $(document).ready(async function () {
             y: touch.clientY - rect.top
         };
     }
-
-    // 匯出資料
-    $('#exportDataButton').on('click', async function () {
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.getAll();
-
-        request.onsuccess = async function (event) {
-            const data = event.target.result.map(item => `${item.key}\t${item.value}`).join('\n');
-            if (data.length > 0) {
-                const blob = new Blob([data], { type: 'text/plain' });
-                const link = document.createElement('a');
-                link.download = (await loadFromDB('fontNameEng') || 'MyFreehandFont') + '-' + (new Date()).toISOString() + '.txt';
-                link.href = window.URL.createObjectURL(blob);
-                link.click();
-            } else {
-                alert(fdrawer.noDataToExport);
-            }
-        };
-    });
 
 	// 匯出事件 - Debugger
 	$('#exportEventsButton').on('click', async function () {
@@ -1044,6 +1034,26 @@ $(document).ready(async function () {
 		} else {
 			alert(fdrawer.noDataToExport);
 		}
+	});
+
+	// 匯出資料
+	$('#exportDataButton').on('click', async function () {
+		const transaction = db.transaction([storeName], 'readonly');
+		const store = transaction.objectStore(storeName);
+		const request = store.getAll();
+
+		request.onsuccess = async function (event) {
+			const data = event.target.result.map(item => `${item.key}\t${item.value}`).join('\n');
+			if (data.length > 0) {
+				const blob = new Blob([data], { type: 'text/plain' });
+				const link = document.createElement('a');
+				link.download = (await loadFromDB('fontNameEng') || 'MyFreehandFont') + '-' + (new Date()).toISOString() + '.txt';
+				link.href = window.URL.createObjectURL(blob);
+				link.click();
+			} else {
+				alert(fdrawer.noDataToExport);
+			}
+		};
 	});
 
     // 匯入資料

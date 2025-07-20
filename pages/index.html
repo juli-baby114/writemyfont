@@ -46,8 +46,7 @@
 		<span class="butt" id="hintButton">💡</span>
 		<span class="butt" id="settingButton">⚙️</span>
 		<span id="spanDoneCount">-</span>
-		<label id="label-tester"><input type="checkbox" id="saveAsTester"><br>測試</label>
-		<span class="butt" id="saveButton">下載字型</span>
+		<span class="butt" id="downloadButton">💾</span>
     </div>
 	<div id="progress-container">
 		<progress id="progress-bar" value="0" max="100"></progress>
@@ -71,11 +70,11 @@
 			<li>半形文字一律輸出成比例寬，故水平方向位置會被忽略。背景的紅線是基線的參考位置。</li>
 			<li>全形的英數字會使用半形英數字自動產生。</li>
 			<li>當所需的字符齊全時，系統會自動處理直排、組合文字的設定。</li>
-			<li>點擊「下載字型OTF檔案」按鈕來保存您的字型。請注意因為技術的限制，目前本系統所產生的OTF檔案，雖可勉強安裝運作，但並非正確的CID格式，可能在Adobe軟體無法正確識別為CJK字型。</li>
-			<li>為了避免電腦的字型字型影響安裝與測試，在測試階段建議勾選測試模式。這樣字型名稱後面會自動加上流水號。</li>
+			<li>請注意因為技術的限制，目前本系統所產生的OTF檔案，雖可勉強安裝運作，但並非正確的CID格式，可能在Adobe軟體無法正確識別為CJK字型。</li>
 			<li>本服務所生成的字型檔，若使用上造成任何影響，本服務與作者不負任何責任。</li>
-			<li>轉外框功能使用<a href="https://github.com/kilobtye/potrace" target="_blank">potrace.js</a>專案。</li>
-			<li>OpenType匯出功能使用<a href="https://github.com/opentypejs/opentype.js" target="_blank">opentype.js</a>專案。<p class="dummy"></p></li>
+			<li>本系統並未蒐集任何使用者筆跡或其他用戶資訊。但若要公開您的字型檔時，請自行評估筆跡公開的風險。</li>
+			<li>本工具不定期更新，雖然力求盡可能支援先前的版本，但要維護多種舊機制相各種環境有所困難，難以盡善盡美。由於所有版本程式碼都是開源的，可自行從GitHub上使用。若有技術支援需求，可與作者聯絡（可能須付費）。</li>
+			<li>本專案GitHub頁面在<a href="https://github.com/ButTaiwan/writemyfont" target="_blank">這裡</a>，在此可查閱更多資訊。<p class="dummy"></p></li>
 		</ul>
 	</div>
 
@@ -85,42 +84,60 @@
 			<h2 id="settings-title">設定</h2>
 			<span class="note" id="span-welcome">在開始書寫之前，先來設定一些基本資訊吧！這些設定值之後都能再更改。<br>提醒您，若您是在App內的瀏覽器開啟本頁，建議用系統瀏覽器開啟，避免資料遺失！</span>
 
-			<label for="fontNameEng">字型英文名稱</label>
+			<h3>字型英文名稱</h3>
 			<input id="fontNameEng" type="text" placeholder="請輸入英文名稱" />
 			
-			<label for="fontNameCJK">字型中文名稱</label>
+			<h3>字型中文名稱</h3>
 			<input id="fontNameCJK" type="text" placeholder="請輸入中文名稱" />
 			
-			<label for="scaleRateSlider">縮放率</label>
+			<h3>縮放率</h3>
 			<input id="scaleRateSlider" type="range" min="80" max="200" value="100" />
 			<span id="scaleRateValue">100%</span>
 			<span class="note">手寫時為了避免超框，容易不經意把字寫得偏小。這裡可以調整文字框的尺寸。</span>
 			
-			<label for="noFixedWidthFlag">中文字不等寬</label>
+			<h3>中文字不等寬</h3>
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">設定為不等寬會更像手寫字型，但可能不適合用於直排。</span>
 			
-			<label for="pressureDrawingEnabled">啟用舊筆壓模式</label>
+			<h3>啟用舊筆壓模式（不建議）</h3>
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
 			<span class="note">舊筆壓模式可對無筆壓裝置模擬筆壓效果，但無法支援筆刷功能。</span>
 
-			<div id="div-backup">
-				<br />
-				<br />
-				<hr />
-				<label for="clearAllButton">完全清除字型資料</label>
-				<button id="clearAllButton">清除字型資料（無法復原！）</button>
-				<br />
-				<label for="exportEventsButton">匯出系統事件（開發用）</label>
-				<button id="exportEventsButton">匯出系統事件</button>
-				<br />
-				<label for="importDataFile">匯入先前備份的資料</label>
-				<input type="file" id="importDataFile" accept=".txt" />
-				<br />
-				<label for="exportDataButton">匯出編輯中資料</label>
-				<button id="exportDataButton">備份工作中的字型資料</button>
-				<br />
-			</div>
+			<br />
+			<br />
+			<br />
+			<hr />
+			<h3>完全清除字型資料</h3>
+			<button id="clearAllButton">清除字型資料（無法復原！）</button>
+			<br />
+			<h3>匯出系統事件（開發用）</h3>
+			<button id="exportEventsButton">匯出系統事件</button>
+			<br />
+			<p class="dummy"></p>
+		</div>
+	</div>
+
+	<div id="download-container" class="dialog">
+		<div class="dialog-body">
+			<span id="closeDownloadButton" class="close">×</span>
+			<h2 id="settings-title">下載</h2>
+
+			<h3>下載字型</h3>
+			<input id="saveAsTester" type="checkbox" />
+			<label for="saveAsTester">測試輸出</label>
+			<span class="note">勾選測試輸出，字型名稱會加上流水號。避免系統快取造成在電腦上無法正常安裝使用的問題。</span>
+			<button id="downloadFontButton">下載字型OTF檔案</button><br>
+			<h3>斗內作者</h3>
+			字型檔的權利均屬於您個人，不過如果您喜歡這個工具，請<a href="https://p.ecpay.com.tw/930AED7" target="_blank">考慮斗內支持作者的開發工作</a>。您的支持將有助於未來的更新和改進！
+			<br />
+			<br />
+			<hr />
+			<h3>匯入先前備份的資料</h3>
+			<input type="file" id="importDataFile" accept=".txt" />
+			<br />
+			<h3>匯出編輯中資料</h3>
+			<button id="exportDataButton">備份工作中的字型資料</button>
+			<br />
 			<p class="dummy"></p>
 		</div>
 	</div>
@@ -146,7 +163,7 @@
 			inAppNotice: '請使用裝置瀏覽器開啟以獲得最佳使用體驗。'
 		};
 	</script>
-	
+
     <script src="pressure-drawing.js"></script>
     <script src="cglyphlist.js"></script>
     <script src="fontdrawer.js"></script>
