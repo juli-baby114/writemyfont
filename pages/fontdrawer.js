@@ -1,4 +1,4 @@
-const version = '0.481'; // 版本號
+const version = '0.50'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 let brushMode = 0;
@@ -11,7 +11,7 @@ const dbName = fdrawer.dbName || 'FontDrawerDB'; // 使用 fdrawer.dbName，如�
 const storeName = 'FontData';
 let db;
 
-//const events = [];
+const events = [];
 
 const brushes = [];
 function addBrush(imgSrc) {
@@ -471,20 +471,15 @@ $(document).ready(async function () {
 
     // 儲存背景用於筆壓繪圖的即時預覽
     let backgroundImageData = null;
-	let hasPressureValue = false; // 是否有筆壓值
 	let lastX, lastY, lastLW;
 	var eraseMode = false;
 
     // 開始繪製
-    $canvas.on('mousedown touchstart pointerdown', function (event) {
+    //$canvas.on('mousedown touchstart pointerdown', function (event) {
+	$canvas.on('pointerdown', function (event) {
 		const { x, y } = getCanvasCoordinates(event);
-		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
-
-		var pressureVal = event.originalEvent.pressure;
-		if (hasPressureValue && typeof(pressureVal) == 'undefined') return; // 如果已經有筆壓值，且當前事件沒有筆壓值，則不繪製
-		if (typeof(pressureVal) != 'undefined') hasPressureValue = true;
-		if (hasPressureValue && pressureVal > 0 && pressureVal < 0.05) return;	// 忽略太微弱的筆觸
-		if (typeof(pressureVal) == 'undefined' || pressureVal == 1 || pressureVal == 0) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5
+		if (events.length > 1000) events.splice(0, events.length - 200);
+		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
 
 		var png = canvas.toDataURL();
 		if (!isDrawing && png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
@@ -492,8 +487,7 @@ $(document).ready(async function () {
 
 		//console.log(event, pressureVal, event.originalEvent.pointerType);
 
-        if (pressureDrawingEnabled) {
-            // 使用筆壓繪圖系統
+        if (pressureDrawingEnabled) {		// 舊筆壓模式
             const pressure = pressureDrawing.simulatePressure(event.originalEvent, 'start');
             pressureDrawing.startStroke(x * ratio, y * ratio, pressure);
             // 儲存背景圖像用於即時預覽
@@ -501,30 +495,58 @@ $(document).ready(async function () {
             
             // 防止預設的觸控行為（如滾動）
             event.preventDefault();
-        } else {
-            // 使用傳統繪圖系統
+
+		} else if (pressureMode) {			// 筆刷+筆壓模式
+			var pressureVal = event.originalEvent.pressure;
+			if (event.originalEvent.pointerType != 'pen' && 
+				(pressureVal == 1 || pressureVal == 0)) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5	
+
+			var lw = lineWidth * pressureVal * 2; // 計算線寬
+			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
+			ctx.drawImage(brushes[brushMode], x*ratio - lw/2, y*ratio - lw/2, lw, lw);
+			events.push(`Start-DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw}`); // 儲存事件資訊
+
 			lastX = x; // 儲存最後的 X 座標
 			lastY = y; // 儲存最後的 Y 座標
-			lastLW = lineWidth * (pressureMode ? pressureVal * 2 : 1);
+			lastLW = lw;
+	
+		} else {							// 筆刷模式（無筆壓）
+			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
+			ctx.drawImage(brushes[brushMode], x*ratio - lineWidth/2, y*ratio - lineWidth/2, lineWidth, lineWidth);
+			events.push(`Start-DrawImage / - / - / ${x}, ${y}, ${lineWidth}`); // 儲存事件資訊
+
+			lastX = x; // 儲存最後的 X 座標
+			lastY = y; // 儲存最後的 Y 座標
+			lastLW = lineWidth;
         }
 	});
 
     // 繪製中
-	$canvas.on('touchmove pointermove', function (event) {
+	$canvas.on('pointermove', function (event) {
 		if (!isDrawing) return;
+
 	    const { x, y } = getCanvasCoordinates(event);
-		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
+		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
-		if (lastX == x && lastY == y) return; // 如果沒有移動，則不繪製
-
+		//if (lastX == x && lastY == y) return; // 如果沒有移動，則不繪製
 		//console.log(event, event.originalEvent.pressure, event.originalEvent.pointerType);
 
-		var pressureVal = event.originalEvent.pressure;
-		if (hasPressureValue && typeof(pressureVal) == 'undefined') return; // 如果已經有筆壓值，且當前事件沒有筆壓值，則不繪製
-		if (typeof(pressureVal) != 'undefined') hasPressureValue = true;
-		if (event.originalEvent.pointerType == 'pen' && pressureVal == 0) return; 	// 如果是畫筆，且筆壓值等於 0，則不繪製（Apple Pencil提起時會發生）
-		if (hasPressureValue && pressureVal > 0 && pressureVal < 0.05) return;		// 忽略太微弱的筆觸
-		if (typeof(pressureVal) == 'undefined' || pressureVal == 1 || pressureVal == 0) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5
+		var pressureVal = 0.5;
+		if (pressureMode) {										// 只有啟動筆壓時才處理
+			pressureVal = event.originalEvent.pressure;
+			if (pressureVal < 0.03) return;						// 濾除雜訊
+			if (event.originalEvent.pointerType == 'pen') {		// 真正的觸控筆，使用真實的筆壓值
+				if (pressureVal == 0) return;		// Apple Pencil提筆時會發生0的瞬間 => 忽略不繪製
+			} else {											// 非觸控筆，可能是螢幕模擬，或是根本沒有筆壓值
+				// Chrome/Edge的DevTools模擬筆壓固定傳1、Safari固定傳0
+				if (pressureVal == 1 || pressureVal == 0) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5
+
+				// 使用正弦函數來加強筆壓變化
+				// Android螢幕模擬筆壓，我的裝置幾乎都傳0.4~0.6之間的值，因為筆壓變化不明顯，所以使用正弦函數來加強筆壓變化
+				// 本公式能確保0.5維持不變，且範圍仍在0～1之間
+				pressureVal = 0.5 + Math.sin((pressureVal-0.5) * Math.PI);
+			}
+		}
 
         if (pressureDrawingEnabled) {
             // 使用筆壓繪圖系統：收集點並提供即時預覽
@@ -549,20 +571,14 @@ $(document).ready(async function () {
             
             // 防止預設的觸控行為
             event.preventDefault();
-        } else {
+
+		} else {
             ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
 			
-			var lw = lineWidth;
-			if (pressureMode) {		
-				if (event.originalEvent.pointerType == 'pen') {
-					lw = lineWidth * pressureVal * 2;
-				} else {
-					lw = lineWidth * (1 + Math.sin((pressureVal-0.5) * Math.PI));
-				}
-			}
+			var lw = lineWidth * pressureVal * 2;
 
 			var d = Math.max(Math.abs(lastX - x), Math.abs(lastY - y)) * 1.5;
-			for (var t = 0; t<d; t++) {
+			for (var t = 0; t<=d; t++) {
 				var tx = (lastX + (x - lastX) * t / d) * ratio;
 				var ty = (lastY + (y - lastY) * t / d) * ratio;
 				var tlw = lastLW + (lw - lastLW) * t / d; // 線寬漸變
@@ -581,7 +597,7 @@ $(document).ready(async function () {
 					ctx.drawImage(brushes[brushMode], tx - tlw/2, ty - tlw/2, tlw, tlw);
 				}				
 			}
-			//events.push(`DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw} (${lastX}, ${lastY}, ${lastLW}) ${d}`); // 儲存事件資訊
+			events.push(`Move-DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw} (${lastX}, ${lastY}, ${lastLW}) ${d}`); // 儲存事件資訊
 
 			lastX = x; // 更新最後的 X 座標
 			lastY = y; // 更新最後的 Y 座標
@@ -591,11 +607,11 @@ $(document).ready(async function () {
 
     // 停止繪製
     $canvas.on('mouseup mouseleave touchend pointerup pointerleave', function (event) {
+	//$canvas.on('pointerup pointerleave', function (event) {
         if (!isDrawing) return;
-		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
-
         isDrawing = false;
-		hasPressureValue = false;
+		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
+
         
         if (pressureDrawingEnabled) {
             // 使用筆壓繪圖系統：生成最終筆跡並繪製
@@ -619,8 +635,9 @@ $(document).ready(async function () {
             // 清除背景圖像數據
             backgroundImageData = null;
         } else {
-            // 使用傳統繪圖系統
-            //ctx.closePath();
+			lastX = null;
+			lastY = null;
+			lastLW = null;
         }
         
         saveToLocalDB(); // 停止繪製時儲存畫布內容到 Local Storage
@@ -1015,19 +1032,19 @@ $(document).ready(async function () {
         };
     });
 
-	// // 匯出事件 - Debugger
-	// $('#exportEventButton').on('click', async function () {
-	// 	const data = events.join('\n');
-	// 	if (data.length > 0) {
-	// 		const blob = new Blob([data], { type: 'text/plain' });
-	// 		const link = document.createElement('a');
-	// 		link.download = (await loadFromDB('fontNameEng') || 'EventLog') + '-' + (new Date()).toISOString() + '.txt';
-	// 		link.href = window.URL.createObjectURL(blob);
-	// 		link.click();
-	// 	} else {
-	// 		alert(fdrawer.noDataToExport);
-	// 	}
-	// });
+	// 匯出事件 - Debugger
+	$('#exportEventsButton').on('click', async function () {
+		const data = events.join('\n');
+		if (data.length > 0) {
+			const blob = new Blob([data], { type: 'text/plain' });
+			const link = document.createElement('a');
+			link.download = (await loadFromDB('fontNameEng') || 'MyFreehandFont') + '-EventLog' + (new Date()).toISOString() + '.txt';
+			link.href = window.URL.createObjectURL(blob);
+			link.click();
+		} else {
+			alert(fdrawer.noDataToExport);
+		}
+	});
 
     // 匯入資料
     $('#importDataFile').on('change', async function () {
