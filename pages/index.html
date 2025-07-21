@@ -73,6 +73,7 @@
 			<li>請注意因為技術的限制，目前本系統所產生的OTF檔案，雖可勉強安裝運作，但並非正確的CID格式，可能在Adobe軟體無法正確識別為CJK字型。</li>
 			<li>本服務所生成的字型檔，若使用上造成任何影響，本服務與作者不負任何責任。</li>
 			<li>本系統並未蒐集任何使用者筆跡或其他用戶資訊。但若要公開您的字型檔時，請自行評估筆跡公開的風險。</li>
+			<li>筆刷之筆壓功能僅支援有筆壓訊號的裝置。iOS設備使用Apple Pencil以外的觸控筆，不會回傳筆壓訊號。</li>
 			<li>本工具不定期更新，雖然力求盡可能支援先前的版本，但要維護多種舊機制相各種環境有所困難，難以盡善盡美。由於所有版本程式碼都是開源的，可自行從GitHub上使用。若有技術支援需求，可與作者聯絡（可能須付費）。</li>
 			<li>本專案GitHub頁面在<a href="https://github.com/ButTaiwan/writemyfont" target="_blank">這裡</a>，在此可查閱更多資訊。<p class="dummy"></p></li>
 		</ul>
@@ -103,6 +104,7 @@
 			<input id="pressureDrawingEnabled" type="checkbox" checked />
 			<span class="note">舊筆壓模式可對無筆壓裝置模擬筆壓效果，但無法支援筆刷功能。</span>
 
+			<div id="div-backup">
 			<br />
 			<br />
 			<br />
@@ -113,6 +115,7 @@
 			<h3>匯出系統事件（開發用）</h3>
 			<button id="exportEventsButton">匯出系統事件</button>
 			<br />
+			</div>
 			<p class="dummy"></p>
 		</div>
 	</div>
@@ -152,7 +155,7 @@
 			fontLang: 'zh-TW',
 			codePage: 0x00100001,
 			findMsg: '請輸入要找的文字：',
-			notFound: '無此字符！',
+			notFound: '查無此字符！\n請問要新增到使用者字表嗎？',
 			noDataToExport: '沒有可匯出的資料。',
 			importConfirm: '確定要匯入資料嗎？這將清除目前編輯中的所有資料。',
 			importDone: '匯入完成。',
@@ -160,7 +163,8 @@
 			clearDone: '已清除。',
 			welcomeTitle: '歡迎使用手寫字型產生器！',
 			settingsTitle: '字型設定',
-			inAppNotice: '請使用裝置瀏覽器開啟以獲得最佳使用體驗。'
+			inAppNotice: '請使用裝置瀏覽器開啟以獲得最佳使用體驗。',
+			customList: '使用者字表'
 		};
 	</script>
 
