@@ -1,4 +1,4 @@
-const version = '0.52'; // 版本號
+const version = '0.523'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 let brushMode = 0;
@@ -475,9 +475,8 @@ $(document).ready(async function () {
 	var eraseMode = false;
 
     // 開始繪製
-    //$canvas.on('mousedown touchstart pointerdown', function (event) {
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
-		if (pressureMode && !event.type.includes('pointer')) return;		// 筆壓模式只處理 pointer 事件
+		if (pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
 
 		const { x, y } = getCanvasCoordinates(event);
 		if (events.length > 1000) events.splice(0, events.length - 200);
@@ -525,14 +524,11 @@ $(document).ready(async function () {
 
     // 繪製中
 	$canvas.on('mousemove touchmove pointermove', function (event) {
-		if (pressureMode && !event.type.includes('pointer')) return;		// 筆壓模式只處理 pointer 事件
 		if (!isDrawing) return;
+		if (pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
 
-	    const { x, y } = getCanvasCoordinates(event);
-		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
-
-		//if (lastX == x && lastY == y) return; // 如果沒有移動，則不繪製
-		//console.log(event, event.originalEvent.pressure, event.originalEvent.pointerType);
+		const { x, y } = getCanvasCoordinates(event);
+		events.push(`${event.type} / ${pressureMode} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
 		var pressureVal = 0.5;
 		if (pressureMode) {										// 只有啟動筆壓時才處理
@@ -581,7 +577,7 @@ $(document).ready(async function () {
 			var lw = lineWidth * pressureVal * 2;
 
 			var d = Math.max(Math.abs(lastX - x), Math.abs(lastY - y)) * 1.5;
-			for (var t = 0; t<=d; t++) {
+			if (d > 0) for (var t = 0; t<=d; t++) {
 				var tx = (lastX + (x - lastX) * t / d) * ratio;
 				var ty = (lastY + (y - lastY) * t / d) * ratio;
 				var tlw = lastLW + (lw - lastLW) * t / d; // 線寬漸變
