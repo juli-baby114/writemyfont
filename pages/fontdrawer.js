@@ -1,4 +1,4 @@
-const version = '0.523'; // 版本號
+const version = '0.524'; // 版本號
 const upm = 1000;
 let lineWidth = 12; // 預設畫筆粗細為 12
 let brushMode = 0;
@@ -610,6 +610,7 @@ $(document).ready(async function () {
         isDrawing = false;
 		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
+		ctx.globalCompositeOperation = "source-over"; // 恢復正常繪圖模式(重要)
         
         if (pressureDrawingEnabled) {
             // 使用筆壓繪圖系統：生成最終筆跡並繪製
