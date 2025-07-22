@@ -1,4 +1,4 @@
-const version = '0.54'; // 版本號
+const version = '0.55'; // 版本號
 const upm = 1000;
 //let lineWidth = 12; // 預設畫筆粗細為 12
 //let brushMode = 0;
@@ -146,6 +146,7 @@ async function loadSettings() {
 	const settings = {
 		notNewFlag: await loadFromDB('notNewFlag', 'N') == 'Y',				// 是否為舊檔案，預設為 N
 		scaleRate: await loadFromDB('scaleRate', 100) * 1, 					// 縮放比例，預設為 100%
+		smallMode: await loadFromDB('smallMode', 'N') == 'Y',				// 是否小字模式，預設為 N
 		lineWidth: await loadFromDB('lineWidth', 12) * 1, 					// 筆寬，預設為 12
 		brushType: await loadFromDB('brushType', 0) * 1, 					// 筆刷類型，預設為 0
 		pressureMode: await loadFromDB('pressureMode', 'N') == 'Y',			// 筆壓模式，預設為 N
@@ -328,6 +329,9 @@ $(document).ready(async function () {
 		settings = await loadSettings();
 		initListSelect($listSelect);
 		initCanvas(canvas);	// 初始化九宮格底圖
+		$('#canvas-container').toggleClass('smallmode', settings.smallMode);
+		ratio = canvas.height / $canvas.height();
+
 		$listSelect.change(); // 觸發一次 change 事件以載入第一個列表
 		
 		// 初始化筆壓繪圖狀態
@@ -950,6 +954,7 @@ $(document).ready(async function () {
         $('#settings-container').show();
 		$('#fontNameEng').val(settings.fontNameEng);
 		$('#fontNameCJK').val(settings.fontNameCJK);
+		$('#smallModeCheck').prop('checked', settings.smallMode);
 		$('#noFixedWidthFlag').prop('checked', settings.noFixedWidthFlag);
 		var scale = settings.scaleRate; // 預設縮放比例為 100%
 		$('#scaleRateSlider').val(scale);
@@ -968,6 +973,11 @@ $(document).ready(async function () {
 
 	$('#fontNameEng').on('change', function () { updateSetting('fontNameEng', $(this).val().replace(/[^a-zA-Z0-9 ]/g, '')); });
 	$('#fontNameCJK').on('change', function () { updateSetting('fontNameCJK', $(this).val()); });
+	$('#smallModeCheck').on('click', async function () {
+		await updateSetting('smallMode', $(this).prop('checked'));
+		$('#canvas-container').toggleClass('smallmode', settings.smallMode);
+		ratio = canvas.height / $canvas.height();
+	});
 	$('#noFixedWidthFlag').on('click', function () { updateSetting('noFixedWidthFlag', $(this).prop('checked')); });
 	$('#scaleRateSlider').on('input', function () { 
 		var rate = parseInt($(this).val(), 10);

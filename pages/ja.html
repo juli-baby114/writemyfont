@@ -29,12 +29,12 @@
 	<div id="slider-container">
 		<div id="brushSelector"></div><div id="pressureButton" class="off"></div>
 		<span class="butt use" id="penButton">🖌️</span><span class="butt" id="eraserButton">🚿</span>
-		<input id="lineWidthSlider" type="range" min="2" max="30" value="12" />
+		<input id="lineWidthSlider" type="range" min="2" max="36" value="12" />
 		<label for="lineWidthSlider"><span id="lineWidthValue">12</span></label>
 	</div>
 
 	<div id="button-container">
-		<span class="butt" id="clearButton">🗑️</span>
+		<span class="butt" id="clearButton">🚮</span>
 		<span class="butt" id="moveLeftButton">⬅️</span>
 		<span class="butt" id="moveRightButton">➡️</span>
 		<span class="butt" id="moveUpButton">⬆️</span>
@@ -96,7 +96,11 @@
 			<input id="scaleRateSlider" type="range" min="80" max="200" value="100" />
 			<span id="scaleRateValue">100%</span>
 			<span class="note">手書きの場合、枠をはみ出さないように書くと、どうしても文字がやや小さくなりがちですが、拡大率を設定して文字枠のサイズを調整できます。</span>
-			
+
+			<h3>小さく書きたい！</h3>
+			<input id="smallModeCheck" type="checkbox" />
+			<span class="note">マジで文字が小さい人にどうぞ。</span>
+
 			<h3>全角文字もプロポーショナル幅</h3>
 			<input id="noFixedWidthFlag" type="checkbox" />
 			<span class="note">手書きフォントの性格上、固定幅よりもプロポーショナル幅の方が自然に見える場合がありますが、縦書きとしての利用に不向きです。</span>

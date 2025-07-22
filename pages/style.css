@@ -25,8 +25,8 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
 #glyphName { font-family: Consolas, monospace; color: #aaa }
 #demo-container #charSeq { font-size: 2.6em; line-height: 1; margin: 0 auto 10px auto; width: 1em; font-family: GenYoExt, LessonOne, sans-serif; border: 1px solid #aaa; }
 #demo-container #charSeq.vert { writing-mode: vertical-rl; text-orientation: mixed; font-feature-settings: "vert" }
-#prevButton { font-size: 2.5em; position: absolute; left: 0; top: 0; border: 0; background: transparent; box-shadow: none; }
-#nextButton { font-size: 2.5em; position: absolute; right: 0; top: 0; border: 0; background: transparent; box-shadow: none }
+#prevButton { font-size: 3.2em; position: absolute; left: 0; top: 0; border: 0; background: transparent; box-shadow: none; }
+#nextButton { font-size: 3.2em; position: absolute; right: 0; top: 0; border: 0; background: transparent; box-shadow: none }
 
 #canvas-container { position: relative; width: 360px; height: 360px; border: 1px solid #888; background-color: #fff;}
 canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch-action: none; }
@@ -34,14 +34,16 @@ canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch
 	#canvas-container { width: 320px; height: 320px }
 	canvas { width: 320px; height: 320px; touch-action: none; }
 }
+.smallmode { width: 200px !important; height: 200px !important}
+.smallmode canvas { width: 200px; height: 200px; touch-action: none; }
 
 #gridCanvas {  z-index: 0 } /* 九宮格底圖在下方 */
 #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 1 } /* 繪圖畫布在上方 */
 
-#slider-container { text-align: center; margin: 10px 0 }
+#slider-container { text-align: center; margin: 10px 0; font-family: sans-serif }
 #slider-container .use { background-color: #ffc ;}
-#lineWidthSlider { margin-left: 15px; width: 140px; display: inline-block; vertical-align: middle; }
-#slider-container { font-family: sans-serif; }
+#lineWidthSlider { margin-left: 15px; width: 120px; display: inline-block; vertical-align: middle; }
+#slider-container #lineWidthValue { display: inline-block; width: 1.2em; text-align: right; }
 #brushSelector { display: inline-block; width: 32px; height: 32px; background-color: #fff; border: 1px solid #777; vertical-align: bottom; margin: 2px 0 2px 2px; padding: 0; cursor: pointer; border-radius: 10px 0 0 10px; text-align: center; }
 #brushSelector img { width: 28px; height: 28px; line-height: 32px; margin-top: 2px}
 #pressureButton { display: inline-block; width: 32px; height: 32px; border: 1px solid #777; margin: 2px 4px 2px 0; border-radius: 0 10px 10px 0; vertical-align: bottom; }
@@ -51,7 +53,7 @@ canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch
 #eraserButton { padding-left: 2px; border-radius: 0 10px 10px 0; margin-left: 0; border-left: 0 }
 
 #button-container { display: flex; gap: 5px; justify-content: center }
-#button-container span.butt { padding: 6px 8px; font-size: 22px; }
+#button-container span.butt { padding: 0; border: 0; font-size: 32px; box-shadow: none; line-height: 1.1; }
 
 #list-container { display: block; position: fixed; top: 0; left: 0; width: 100%; justify-content: center; background-color: #fff; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; z-index: 1; }
 
