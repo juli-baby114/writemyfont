@@ -1,4 +1,4 @@
-const version = '0.55'; // 版本號
+const version = '0.551'; // 版本號
 const upm = 1000;
 //let lineWidth = 12; // 預設畫筆粗細為 12
 //let brushMode = 0;
@@ -705,8 +705,12 @@ $(document).ready(async function () {
 
 	// 清除畫布的功能
 	$('#clearButton').on('click', async function () {
+		const savedCanvas = await loadFromDB('g_' + nowGlyph);
+		if (!savedCanvas) return; // 如果沒有儲存的畫布，則不進行任何操作
+		undoStack.push(canvas.toDataURL()); // 儲存當前畫布狀態到 undoStack
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		undoStack.length = 0; // 清空復原堆疊
+		
+		//undoStack.length = 0; // 清空復原堆疊
 		await deleteFromDB('g_' + nowGlyph); // 清除 IndexedDB 中的資料
 		await deleteFromDB('s_' + nowGlyph); // 清除 IndexedDB 中的資料
 	});
