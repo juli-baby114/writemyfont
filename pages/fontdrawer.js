@@ -1,4 +1,4 @@
-const version = '0.561'; // 版本號
+const version = '0.562'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -558,7 +558,7 @@ $(document).ready(async function () {
 		} else { //if (simulatePressure && lastX && lastY) {		
 			let distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
 			let speedFactor = Math.min(1, 5 / Math.max(distance, 1));
-			pressure = (lastPressure*3 + speedFactor * 0.7 + 0.1) / 4;
+			pressure = (lastPressure*3 + speedFactor * 0.65 + 0.05) / 4;
             return lastPressure = pressure;
 		}
 	}
