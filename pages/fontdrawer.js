@@ -1,4 +1,4 @@
-const version = '0.551'; // 版本號
+const version = '0.552'; // 版本號
 const upm = 1000;
 //let lineWidth = 12; // 預設畫筆粗細為 12
 //let brushMode = 0;
@@ -309,6 +309,20 @@ async function createFont(glyphs, gidMap, verts, ccmps) {
 	return font;
 }
 
+function getPressureValue(isStart, event) {
+	if (isStart && events.length > 1000) events.splice(0, events.length - 200);
+
+	let eventType = event.type;
+	let toolType = event.originalEvent.pointerType;
+	let pressure = event.originalEvent.pressure;
+	let hasPressureVal = typeof(pressure) != 'undefined';
+	let touchForce = event.originalEvent.touches && event.originalEvent.touches.length > 0 ? event.originalEvent.touches[0].force : null;
+	let webkitForce  = event.originalEvent.webkitForce !== undefined ? event.originalEvent.webkitForce : null;
+
+	events.push(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
+	//console.log(`Event: ${eventType}, Pressure: ${pressure}, Tool: ${toolType}, Touch Force: ${touchForce}, Webkit Force: ${webkitForce}`);
+}
+
 $(document).ready(async function () {
 	const $listSelect = $('#listSelect');
 
@@ -520,11 +534,12 @@ $(document).ready(async function () {
     // 開始繪製
     //$canvas.on('mousedown touchstart pointerdown', function (event) {
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
+		getPressureValue(true, event); // 紀錄開始事件
 		if (settings.pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
 
 		const { x, y } = getCanvasCoordinates(event);
-		if (events.length > 1000) events.splice(0, events.length - 200);
-		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
+		//if (events.length > 1000) events.splice(0, events.length - 200);
+		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
 
 		var png = canvas.toDataURL();
 		if (!isDrawing && png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
@@ -549,7 +564,6 @@ $(document).ready(async function () {
 			var lw = settings.lineWidth * pressureVal * 2; // 計算線寬
 			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
 			ctx.drawImage(brushes[settings.brushType], x*ratio - lw/2, y*ratio - lw/2, lw, lw);
-			events.push(`Start-DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw}`); // 儲存事件資訊
 
 			lastX = x; // 儲存最後的 X 座標
 			lastY = y; // 儲存最後的 Y 座標
@@ -558,7 +572,6 @@ $(document).ready(async function () {
 		} else {							// 筆刷模式（無筆壓）
 			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
 			ctx.drawImage(brushes[settings.brushType], x*ratio - settings.lineWidth/2, y*ratio - settings.lineWidth/2, settings.lineWidth, settings.lineWidth);
-			events.push(`Start-DrawImage / - / - / ${x}, ${y}, ${settings.lineWidth}`); // 儲存事件資訊
 
 			lastX = x; // 儲存最後的 X 座標
 			lastY = y; // 儲存最後的 Y 座標
@@ -569,10 +582,11 @@ $(document).ready(async function () {
     // 繪製中
 	$canvas.on('mousemove touchmove pointermove', function (event) {
 		if (!isDrawing) return;
+		getPressureValue(false, event); // 紀錄繪製中事件
 		if (settings.pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
 
 	    const { x, y } = getCanvasCoordinates(event);
-		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
+		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
 		//if (lastX == x && lastY == y) return; // 如果沒有移動，則不繪製
 		//console.log(event, event.originalEvent.pressure, event.originalEvent.pointerType);
@@ -655,7 +669,8 @@ $(document).ready(async function () {
     $canvas.on('mouseup mouseleave touchend pointerup pointerleave', function (event) {
         if (!isDrawing) return;
         isDrawing = false;
-		events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
+		getPressureValue(false, event); // 紀錄停止事件
+		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
         ctx.globalCompositeOperation = "source-over"; // 恢復正常繪圖模式(重要)
 
