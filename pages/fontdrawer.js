@@ -1,18 +1,13 @@
-const version = '0.552'; // 版本號
+const version = '0.56'; // 版本號
 const upm = 1000;
-//let lineWidth = 12; // 預設畫筆粗細為 12
-//let brushMode = 0;
-let pressureMode = false;
-
-const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
 const userAgent = navigator.userAgent.toLowerCase();
+const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
+const dbName = fdrawer.dbName || 'FontDrawerDB'; // 使用 fdrawer.dbName，如果未定義則使用預設值
+const storeName = 'FontData';
+const events = [];
 
 let db;
 let settings = null;
-const dbName = fdrawer.dbName || 'FontDrawerDB'; // 使用 fdrawer.dbName，如果未定義則使用預設值
-const storeName = 'FontData';
-
-const events = [];
 
 const brushes = [];
 function addBrush(imgSrc) {
@@ -150,12 +145,13 @@ async function loadSettings() {
 		lineWidth: await loadFromDB('lineWidth', 12) * 1, 					// 筆寬，預設為 12
 		brushType: await loadFromDB('brushType', 0) * 1, 					// 筆刷類型，預設為 0
 		pressureMode: await loadFromDB('pressureMode', 'N') == 'Y',			// 筆壓模式，預設為 N
+		pressureEffect: await loadFromDB('pressureEffect', 'none'),			// 筆壓公式，預設為 none
+		oldPressureMode: await loadFromDB('oldPressureMode', 'N') == 'Y',	// 啟用舊版筆壓模式，預設為 N
 		fontNameEng: await loadFromDB('fontNameEng') || 'MyFreehandFont',
 		fontNameCJK: await loadFromDB('fontNameCJK') || fdrawer.fontNameCJK,
 		noFixedWidthFlag: await loadFromDB('noFixedWidthFlag', 'N') == 'Y',	// 比例寬輸出，預設為 N
 		saveAsTester: await loadFromDB('saveAsTester', 'Y') == 'Y', 		// 是否為測試輸出，預設為 Y
 		testSerialNo: await loadFromDB('testSerialNo', 1) * 1,				// 測試輸出序號，預設為 1
-		oldPressureMode: await loadFromDB('oldPressureMode', 'N') == 'Y',	// 啟用舊版筆壓模式，預設為 N
 		customGlyphs: await loadFromDB('customGlyphs')						// 自定義文字
 	};
 
@@ -244,9 +240,6 @@ function initListSelect($listSelect) {
 			$('<option></option>').val(list).text(list)
 		);
 	}
-	// if (settings.customGlyphs) {
-	// 	$listSelect.append($('<option></option>').val(fdrawer.customList).text(fdrawer.customList));
-	// }
 }
 
 async function createFont(glyphs, gidMap, verts, ccmps) {
@@ -309,20 +302,6 @@ async function createFont(glyphs, gidMap, verts, ccmps) {
 	return font;
 }
 
-function getPressureValue(isStart, event) {
-	if (isStart && events.length > 1000) events.splice(0, events.length - 200);
-
-	let eventType = event.type;
-	let toolType = event.originalEvent.pointerType;
-	let pressure = event.originalEvent.pressure;
-	let hasPressureVal = typeof(pressure) != 'undefined';
-	let touchForce = event.originalEvent.touches && event.originalEvent.touches.length > 0 ? event.originalEvent.touches[0].force : null;
-	let webkitForce  = event.originalEvent.webkitForce !== undefined ? event.originalEvent.webkitForce : null;
-
-	events.push(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
-	//console.log(`Event: ${eventType}, Pressure: ${pressure}, Tool: ${toolType}, Touch Force: ${touchForce}, Webkit Force: ${webkitForce}`);
-}
-
 $(document).ready(async function () {
 	const $listSelect = $('#listSelect');
 
@@ -344,7 +323,6 @@ $(document).ready(async function () {
 		initListSelect($listSelect);
 		initCanvas(canvas);	// 初始化九宮格底圖
 		$('#canvas-container').toggleClass('smallmode', settings.smallMode);
-		ratio = canvas.height / $canvas.height();
 
 		$listSelect.change(); // 觸發一次 change 事件以載入第一個列表
 		
@@ -471,22 +449,26 @@ $(document).ready(async function () {
 
 		// 找不到的話詢問要不要新增這個字
 		if (!breakFlag) {
-			if (confirm(fdrawer.notFound)) {
-				var uni = char.codePointAt(0).toString(16).toUpperCase();
-				var gn = uni.length <= 4 ? 'uni' + uni.padStart(4, '0') : 'u' + uni; // 生成 Unicode 名稱
-				var chr = String.fromCodePoint(char.codePointAt(0));
-
-				if (!glyphList[fdrawer.customList]) {
-					glyphList[fdrawer.customList] = [];
-					initListSelect($listSelect); // 重新初始化下拉選單
+			if (char.length == (char.codePointAt(0) < 65536 ? 1 : 2)) {
+				if (confirm(fdrawer.notFound + '\n' + fdrawer.confirmAdd)) {
+					var uni = char.codePointAt(0).toString(16).toUpperCase();
+					var gn = uni.length <= 4 ? 'uni' + uni.padStart(4, '0') : 'u' + uni; // 生成 Unicode 名稱
+					var chr = String.fromCodePoint(char.codePointAt(0));
+	
+					if (!glyphList[fdrawer.customList]) {
+						glyphList[fdrawer.customList] = [];
+						initListSelect($listSelect); // 重新初始化下拉選單
+					}
+					glyphList[fdrawer.customList].push(gn); // 將新字符添加到自定義列表
+					glyphMap[gn] = {c: chr, w :'F'};	// 將自定義文字添加到映射中
+					updateSetting('customGlyphs', glyphList[fdrawer.customList].join(',')); // 儲存自定義字符
+	
+					nowList = glyphList[fdrawer.customList];
+					$listSelect.val(fdrawer.customList); 	// 更新下拉選單的值
+					setGlyph(glyphList[fdrawer.customList].length-1);
 				}
-				glyphList[fdrawer.customList].push(gn); // 將新字符添加到自定義列表
-				glyphMap[gn] = {c: chr, w :'F'};	// 將自定義文字添加到映射中
-				updateSetting('customGlyphs', glyphList[fdrawer.customList].join(',')); // 儲存自定義字符
-
-				nowList = glyphList[fdrawer.customList];
-				$listSelect.val(fdrawer.customList); 	// 更新下拉選單的值
-				setGlyph(glyphList[fdrawer.customList].length-1);
+			} else {
+				alert(fdrawer.notFound);
 			}
 		}
     });
@@ -526,6 +508,61 @@ $(document).ready(async function () {
 		eraseMode = true; // 切換到橡皮擦模式
 	});
 
+	let hasPointerEvent = false;
+	let hasRealPressure = false;
+	let simulatePressure = false; // 模擬筆壓開關
+	let lastPressure = 0.5; // 上一次的筆壓值
+
+	function getPressureValue(mode, event, x, y) {
+		if (!settings.pressureMode) return 0.5;
+
+		let eventType = event.type;
+		let toolType = event.originalEvent.pointerType;
+		let pressure = event.originalEvent.pressure;
+		//let touchForce = event.originalEvent.touches && event.originalEvent.touches.length > 0 ? event.originalEvent.touches[0].force : null;
+		//let webkitForce  = event.originalEvent.webkitForce !== undefined ? event.originalEvent.webkitForce : null;
+
+		if (mode == 'start') {
+			if (events.length > 1000) events.splice(0, events.length - 200);
+			if (eventType.includes('pointer')) hasPointerEvent = true; // 如果是觸控事件，則標記為有觸控事件
+		} else if (mode == 'end') {
+			simulatePressure = false;
+			hasTouchEvent = false;
+			hasRealPressure = false;
+		} else {
+			if (hasPointerEvent && !eventType.includes('pointer')) return null; // 如果是觸控事件，則標記為有觸控事件
+		}
+	
+		events.push(`${eventType} / ${toolType} / P:${pressure}`); // 儲存事件資訊
+		//console.log(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
+
+		let isRealPressure = typeof(pressure) != 'undefined';
+		if (isRealPressure && toolType != 'pen' && pressure == 0) isRealPressure = false;
+		if (isRealPressure && toolType != 'pen' && !hasRealPressure && (pressure == 1 || pressure == 0.5)) isRealPressure = false;
+		if (toolType == 'pen' && pressure < 0.03) return null;
+		if (mode != 'start' && !simulatePressure && !isRealPressure) return null;
+
+		if (isRealPressure) {
+			simulatePressure = false;	// 如果移動中發現有真實筆壓值，則關閉模擬筆壓
+			if (pressure > 0 && pressure < 1 && pressure != 0.5) hasRealPressure = true;	// 出現過看似真實的筆壓值
+
+			// 真實筆壓值套用敏感度運算
+			if (settings.pressureEffect == 'contrast') return 0.5 + Math.sin((pressure-0.5) * Math.PI)/2;
+			if (settings.pressureEffect == 'enhance') return Math.sin(pressure * Math.PI / 2);
+			return pressure;
+
+		} else if (mode == 'start') {
+			simulatePressure = true;	// 如果開始繪製時沒有真實筆壓值，則開啟模擬筆壓
+			return 0.5;
+
+		} else { //if (simulatePressure && lastX && lastY) {		
+			let distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
+			let speedFactor = Math.min(1, 5 / Math.max(distance, 1));
+			pressure = (lastPressure*2 + speedFactor * 0.6 + 0.1) / 3;
+            return lastPressure = pressure;
+		}
+	}
+
     // 儲存背景用於筆壓繪圖的即時預覽
     let backgroundImageData = null;
 	let lastX, lastY, lastLW;
@@ -534,10 +571,13 @@ $(document).ready(async function () {
     // 開始繪製
     //$canvas.on('mousedown touchstart pointerdown', function (event) {
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
-		getPressureValue(true, event); // 紀錄開始事件
-		if (settings.pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
+		if (isDrawing && !event.type.includes('pointer')) return;
 
 		const { x, y } = getCanvasCoordinates(event);
+		var pressureVal = getPressureValue('start', event, x, y);
+		//if (settings.pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
+
+		ratio = canvas.height / $canvas.height();		// 開始筆畫時重新確認一次螢幕縮放比（因為有可能調過視窗大小等）
 		//if (events.length > 1000) events.splice(0, events.length - 200);
 		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
 
@@ -557,9 +597,9 @@ $(document).ready(async function () {
             event.preventDefault();
 
 		} else if (settings.pressureMode) {			// 筆刷+筆壓模式
-			var pressureVal = event.originalEvent.pressure;
-			if (event.originalEvent.pointerType != 'pen' && 
-				(pressureVal == 1 || pressureVal == 0)) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5	
+			//var pressureVal = event.originalEvent.pressure;
+			// if (event.originalEvent.pointerType != 'pen' && 
+			// 	(pressureVal == 1 || pressureVal == 0)) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5	
 
 			var lw = settings.lineWidth * pressureVal * 2; // 計算線寬
 			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
@@ -582,31 +622,9 @@ $(document).ready(async function () {
     // 繪製中
 	$canvas.on('mousemove touchmove pointermove', function (event) {
 		if (!isDrawing) return;
-		getPressureValue(false, event); // 紀錄繪製中事件
-		if (settings.pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
-
 	    const { x, y } = getCanvasCoordinates(event);
-		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y} (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
-
-		//if (lastX == x && lastY == y) return; // 如果沒有移動，則不繪製
-		//console.log(event, event.originalEvent.pressure, event.originalEvent.pointerType);
-
-		var pressureVal = 0.5;
-		if (settings.pressureMode) {							// 只有啟動筆壓時才處理
-			pressureVal = event.originalEvent.pressure;
-			if (pressureVal < 0.03) return;						// 濾除雜訊
-			if (event.originalEvent.pointerType == 'pen') {		// 真正的觸控筆，使用真實的筆壓值
-				if (pressureVal == 0) return;		// Apple Pencil提筆時會發生0的瞬間 => 忽略不繪製
-			} else {											// 非觸控筆，可能是螢幕模擬，或是根本沒有筆壓值
-				// Chrome/Edge的DevTools模擬筆壓固定傳1、Safari固定傳0
-				if (pressureVal == 1 || pressureVal == 0) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5
-
-				// 使用正弦函數來加強筆壓變化
-				// Android螢幕模擬筆壓，我的裝置幾乎都傳0.4~0.6之間的值，因為筆壓變化不明顯，所以使用正弦函數來加強筆壓變化
-				// 本公式能確保0.5維持不變，且範圍仍在0～1之間
-				pressureVal = 0.5 + Math.sin((pressureVal-0.5) * Math.PI);
-			}
-		}
+		var pressureVal = getPressureValue('move', event, x, y);
+		if (settings.pressureMode && pressureVal == null) return;		// 筆壓模式必須要有筆壓值
 
         if (settings.oldPressureMode) {							// 舊筆壓模式
             // 使用筆壓繪圖系統：收集點並提供即時預覽
@@ -639,7 +657,7 @@ $(document).ready(async function () {
 
 			var d = Math.max(Math.abs(lastX - x), Math.abs(lastY - y)) * 1.5;
 			if (d > 0) for (var t = 0; t<=d; t++) {
-				var tx = (lastX + (x - lastX) * t / d) * ratio;
+					var tx = (lastX + (x - lastX) * t / d) * ratio;
 				var ty = (lastY + (y - lastY) * t / d) * ratio;
 				var tlw = lastLW + (lw - lastLW) * t / d; // 線寬漸變
 
@@ -669,7 +687,8 @@ $(document).ready(async function () {
     $canvas.on('mouseup mouseleave touchend pointerup pointerleave', function (event) {
         if (!isDrawing) return;
         isDrawing = false;
-		getPressureValue(false, event); // 紀錄停止事件
+		const { x, y } = getCanvasCoordinates(event);
+		getPressureValue('end', event, x, y);
 		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
         ctx.globalCompositeOperation = "source-over"; // 恢復正常繪圖模式(重要)
@@ -979,7 +998,7 @@ $(document).ready(async function () {
 		$('#scaleRateSlider').val(scale);
 		$('#scaleRateValue').text(scale + '%');
 
-		// 載入筆壓繪圖設定
+		$('#pressureEffectSelect').val(settings.pressureEffect);
 		$('#pressureDrawingEnabled').prop('checked', settings.oldPressureMode);
 
 		if (!settings.notNewFlag) updateSetting('notNewFlag', true); // 如果是第一次使用，則設定 notNewFlag 為 true
@@ -995,7 +1014,6 @@ $(document).ready(async function () {
 	$('#smallModeCheck').on('click', async function () {
 		await updateSetting('smallMode', $(this).prop('checked'));
 		$('#canvas-container').toggleClass('smallmode', settings.smallMode);
-		ratio = canvas.height / $canvas.height();
 	});
 	$('#noFixedWidthFlag').on('click', function () { updateSetting('noFixedWidthFlag', $(this).prop('checked')); });
 	$('#scaleRateSlider').on('input', function () { 
@@ -1004,6 +1022,7 @@ $(document).ready(async function () {
 		updateSetting('scaleRate', rate);
 		initCanvas(canvas);
 	});
+	$('#pressureEffectSelect').change(function () { updateSetting('pressureEffect', $(this).val()); });
 
 	// 筆壓繪圖設定事件監聽器
 	$('#pressureDrawingEnabled').on('change', async function () { 
