@@ -1,4 +1,4 @@
-const version = '0.562'; // 版本號
+const version = '0.565'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -508,32 +508,33 @@ $(document).ready(async function () {
 		eraseMode = true; // 切換到橡皮擦模式
 	});
 
-	let hasPointerEvent = false;
-	let hasRealPressure = false;
-	let simulatePressure = false; // 模擬筆壓開關
-	let lastPressure = 0.5; // 上一次的筆壓值
+	let hasPointerEvent = false;	// 這個筆畫是否有pointer事件
+	let hasRealPressure = false;	// 這個筆畫是否曾經有疑似真實的筆壓值
+	let simulatePressure = false; 	// 模擬筆壓開關
+	let lastPressure = 0.5; 		// 上一次的筆壓值
 
 	function getPressureValue(mode, event, x, y) {
 		if (!settings.pressureMode) return 0.5;
 
 		let eventType = event.type;
+		if (mode == 'move' && hasPointerEvent && !eventType.includes('pointer')) return null; // 如果曾經有pointer事件，則只接受pointer事件
+
 		let toolType = event.originalEvent.pointerType;
 		let pressure = event.originalEvent.pressure;
-		//let touchForce = event.originalEvent.touches && event.originalEvent.touches.length > 0 ? event.originalEvent.touches[0].force : null;
-		//let webkitForce  = event.originalEvent.webkitForce !== undefined ? event.originalEvent.webkitForce : null;
+		let touchForce = event.originalEvent.touches && event.originalEvent.touches.length > 0 ? event.originalEvent.touches[0].force : null;
+		let webkitForce  = event.originalEvent.webkitForce !== undefined ? event.originalEvent.webkitForce : null;
 
 		if (mode == 'start') {
 			if (events.length > 1000) events.splice(0, events.length - 200);
-			if (eventType.includes('pointer')) hasPointerEvent = true; // 如果是觸控事件，則標記為有觸控事件
+			if (eventType.includes('pointer')) hasPointerEvent = true; 		// 這個筆畫有pointer事件
 		} else if (mode == 'end') {
 			simulatePressure = false;
 			hasTouchEvent = false;
 			hasRealPressure = false;
-		} else {
-			if (hasPointerEvent && !eventType.includes('pointer')) return null; // 如果是觸控事件，則標記為有觸控事件
+			hasPointerEvent = false;
 		}
 	
-		events.push(`${eventType} / ${toolType} / P:${pressure}`); // 儲存事件資訊
+		events.push(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
 		//console.log(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
 
 		let isRealPressure = typeof(pressure) != 'undefined';
@@ -549,7 +550,9 @@ $(document).ready(async function () {
 			// 真實筆壓值套用敏感度運算
 			if (settings.pressureEffect == 'contrast') return 0.5 + Math.sin((pressure-0.5) * Math.PI)/2;
 			if (settings.pressureEffect == 'enhance') return Math.sin(pressure * Math.PI / 2);
-			return pressure;
+
+			if (mode != 'start') pressure = (lastPressure + pressure) / 2;
+			return lastPressure = pressure;
 
 		} else if (mode == 'start') {
 			simulatePressure = true;	// 如果開始繪製時沒有真實筆壓值，則開啟模擬筆壓
@@ -568,54 +571,53 @@ $(document).ready(async function () {
 	let lastX, lastY, lastLW;
 	var eraseMode = false;
 
+	
+	function drawBrush(ctx, brush, x, y, lw) {
+		if (userAgent.includes('macintosh') && userAgent.includes('safari') && !userAgent.includes('chrome')) {
+			// 在 Mac Safari 上使用臨時 canvas 繪製，避免直接繪圖造成污垢
+			// 不知道為什麼我的Mac-Safari直接繪圖會很髒，只好建立一個臨時的畫筆 canvas
+			// 但這會造成Android上很慢，所以只在Mac-Safari上使用
+			const brushCanvas = document.createElement('canvas');
+			brushCanvas.width = lw;
+			brushCanvas.height = lw;
+			const brushCtx = brushCanvas.getContext('2d');
+			brushCtx.drawImage(brush, 0, 0, lw, lw);
+	
+			ctx.drawImage(brushCanvas, x - lw/2, y - lw/2);
+		} else {
+			// 其他瀏覽器直接繪製
+			ctx.drawImage(brush, x - lw/2, y - lw/2, lw, lw);
+		}
+	}
+
     // 開始繪製
-    //$canvas.on('mousedown touchstart pointerdown', function (event) {
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
 		if (isDrawing && !event.type.includes('pointer')) return;
 
 		const { x, y } = getCanvasCoordinates(event);
 		var pressureVal = getPressureValue('start', event, x, y);
-		//if (settings.pressureMode && typeof(event.originalEvent.pressure) == 'undefined') return;		// 筆壓模式必須要有筆壓值
-
-		ratio = canvas.height / $canvas.height();		// 開始筆畫時重新確認一次螢幕縮放比（因為有可能調過視窗大小等）
-		//if (events.length > 1000) events.splice(0, events.length - 200);
-		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / ${x}, ${y}`); // 儲存事件資訊
+		ratio = canvas.height / $canvas.height();		// 筆畫開始時重新確認一次螢幕縮放比（因為有可能調過視窗大小等）
 
 		var png = canvas.toDataURL();
 		if (!isDrawing && png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
-		isDrawing = true;
-
-		//console.log(event, pressureVal, event.originalEvent.pointerType);
+		isDrawing = true;	// 儲存畫布後正式宣告筆畫開始
 
         if (settings.oldPressureMode) {		// 舊筆壓模式
             const pressure = pressureDrawing.simulatePressure(event.originalEvent, 'start');
             pressureDrawing.startStroke(x * ratio, y * ratio, pressure);
-            // 儲存背景圖像用於即時預覽
-            backgroundImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            backgroundImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);			// 儲存背景圖像用於即時預覽
             
             // 防止預設的觸控行為（如滾動）
             event.preventDefault();
 
-		} else if (settings.pressureMode) {			// 筆刷+筆壓模式
-			//var pressureVal = event.originalEvent.pressure;
-			// if (event.originalEvent.pointerType != 'pen' && 
-			// 	(pressureVal == 1 || pressureVal == 0)) pressureVal = 0.5; // 如果沒有正常筆壓值，則使用預設值 0.5	
-
+		} else {			// 筆刷模式
 			var lw = settings.lineWidth * pressureVal * 2; // 計算線寬
 			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
-			ctx.drawImage(brushes[settings.brushType], x*ratio - lw/2, y*ratio - lw/2, lw, lw);
+			drawBrush(ctx, brushes[settings.brushType], x*ratio, y*ratio, lw);
 
 			lastX = x; // 儲存最後的 X 座標
 			lastY = y; // 儲存最後的 Y 座標
-			lastLW = lw;
-	
-		} else {							// 筆刷模式（無筆壓）
-			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
-			ctx.drawImage(brushes[settings.brushType], x*ratio - settings.lineWidth/2, y*ratio - settings.lineWidth/2, settings.lineWidth, settings.lineWidth);
-
-			lastX = x; // 儲存最後的 X 座標
-			lastY = y; // 儲存最後的 Y 座標
-			lastLW = settings.lineWidth;
+		 	lastLW = lw;
         }
 	});
 
@@ -632,19 +634,11 @@ $(document).ready(async function () {
             pressureDrawing.addPoint(x * ratio, y * ratio, pressure);
             
             // 生成即時預覽筆跡
-            const previewStroke = pressureDrawing.createPreviewStroke({
-                size: settings.lineWidth * pressureDelta,
-                thinning: pressureDrawingSettings.thinning,
-                smoothing: pressureDrawingSettings.smoothing,
-                streamline: pressureDrawingSettings.streamline
-            });
-            
+			pressureDrawingSettings.size = settings.lineWidth * pressureDelta;
+            const previewStroke = pressureDrawing.createPreviewStroke(pressureDrawingSettings);            
             if (previewStroke && backgroundImageData) {
-                // 恢復背景圖像
-                ctx.putImageData(backgroundImageData, 0, 0);
-                
-                // 繪製預覽筆跡
-                pressureDrawing.drawStrokeOnCanvas(ctx, previewStroke, eraseMode);
+                ctx.putImageData(backgroundImageData, 0, 0);							// 恢復背景圖像
+                pressureDrawing.drawStrokeOnCanvas(ctx, previewStroke, eraseMode);		// 繪製預覽筆跡
             }
             
             // 防止預設的觸控行為
@@ -656,26 +650,16 @@ $(document).ready(async function () {
 			var lw = settings.lineWidth * pressureVal * 2;
 
 			var d = Math.max(Math.abs(lastX - x), Math.abs(lastY - y)) * 1.5;
-			if (d > 0) for (var t = 0; t<=d; t++) {
+			if (d > 0) {
+				for (var t = d; t>0; t--) {
 					var tx = (lastX + (x - lastX) * t / d) * ratio;
-				var ty = (lastY + (y - lastY) * t / d) * ratio;
-				var tlw = lastLW + (lw - lastLW) * t / d; // 線寬漸變
+					var ty = (lastY + (y - lastY) * t / d) * ratio;
+					var tlw = lastLW + (lw - lastLW) * t / d; // 線寬漸變
 
-				if (userAgent.includes('macintosh') && userAgent.includes('safari') && !userAgent.includes('chrome')) {
-					// 不知道為什麼我的Mac-Safari直接繪圖會很髒，只好建立一個臨時的畫筆 canvas
-					// 但這會造成Android上很慢，所以只在Mac-Safari上使用
-					const brushCanvas = document.createElement('canvas');
-					brushCanvas.width = tlw;
-					brushCanvas.height = tlw;
-					const brushCtx = brushCanvas.getContext('2d');
-					brushCtx.drawImage(brushes[settings.brushType], 0, 0, tlw, tlw);
-
-					ctx.drawImage(brushCanvas, tx - tlw/2, ty - tlw/2);
-				} else {
-					ctx.drawImage(brushes[settings.brushType], tx - tlw/2, ty - tlw/2, tlw, tlw);
-				}				
+					drawBrush(ctx, brushes[settings.brushType], tx, ty, tlw);	
+				}		
+				events.push(`Move-DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw} (${lastX}, ${lastY}, ${lastLW}) ${d}`); // 儲存事件資訊
 			}
-			events.push(`Move-DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw} (${lastX}, ${lastY}, ${lastLW}) ${d}`); // 儲存事件資訊
 
 			lastX = x; // 更新最後的 X 座標
 			lastY = y; // 更新最後的 Y 座標
@@ -689,27 +673,16 @@ $(document).ready(async function () {
         isDrawing = false;
 		const { x, y } = getCanvasCoordinates(event);
 		getPressureValue('end', event, x, y);
-		//events.push(`${event.type} / ${event.originalEvent.pressure} / ${event.originalEvent.pointerType} / (${lastX}, ${lastY}, ${lastLW})`); // 儲存事件資訊
 
         ctx.globalCompositeOperation = "source-over"; // 恢復正常繪圖模式(重要)
 
         if (settings.oldPressureMode) {		// 舊筆壓模式
             // 使用筆壓繪圖系統：生成最終筆跡並繪製
-            const finalStroke = pressureDrawing.finishStroke({
-                size: settings.lineWidth * pressureDelta,
-                thinning: pressureDrawingSettings.thinning,
-                smoothing: pressureDrawingSettings.smoothing,
-                streamline: pressureDrawingSettings.streamline
-            });
-            
+			pressureDrawingSettings.size = settings.lineWidth * pressureDelta;
+            const finalStroke = pressureDrawing.finishStroke(pressureDrawingSettings);
             if (finalStroke && finalStroke.length > 0) {
-                // 恢復背景圖像（如果有的話）
-                if (backgroundImageData) {
-                    ctx.putImageData(backgroundImageData, 0, 0);
-                }
-                
-                // 繪製最終筆跡
-                pressureDrawing.drawStrokeOnCanvas(ctx, finalStroke, eraseMode);
+                if (backgroundImageData) ctx.putImageData(backgroundImageData, 0, 0);	// 恢復背景圖像（如果有的話）
+                pressureDrawing.drawStrokeOnCanvas(ctx, finalStroke, eraseMode);		// 繪製最終筆跡
             }
             
             // 清除背景圖像數據
@@ -961,7 +934,6 @@ $(document).ready(async function () {
 
 			if (glyphMap[gname].v) verts.push(gname);
 			if (glyphMap[gname].s) ccmps.push(gname);
-
 		}
 
 		// 加入全形字符在後面
