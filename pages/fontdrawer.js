@@ -1,4 +1,4 @@
-const version = '0.565'; // 版本號
+const version = '0.566'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -592,6 +592,12 @@ $(document).ready(async function () {
 
     // 開始繪製
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
+		if (event.touches.length === 2) {
+			$('#undoButton').trigger('click');
+			isDrawing = false;
+			return;
+		}
+
 		if (isDrawing && !event.type.includes('pointer')) return;
 
 		const { x, y } = getCanvasCoordinates(event);
@@ -787,6 +793,11 @@ $(document).ready(async function () {
 				$(event.shiftKey ? '#prevButton' : '#nextButton').trigger('click');
 				break;
 		}
+	});
+
+	// 支援鍵盤方向鍵操作
+	$(document).on('touchstart', function (event) {
+		if (event.touches.length === 2) $('#undoButton').trigger('click');
 	});
 
     // 更新進度條
