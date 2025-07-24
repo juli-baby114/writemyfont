@@ -1,4 +1,4 @@
-const version = '0.566'; // 版本號
+const version = '0.567'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -535,7 +535,7 @@ $(document).ready(async function () {
 		}
 	
 		events.push(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
-		//console.log(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
+		console.log(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
 
 		let isRealPressure = typeof(pressure) != 'undefined';
 		if (isRealPressure && toolType != 'pen' && pressure == 0) isRealPressure = false;
@@ -592,7 +592,7 @@ $(document).ready(async function () {
 
     // 開始繪製
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
-		if (event.touches.length === 2) {
+		if (event.touches && event.touches.length === 2) {
 			$('#undoButton').trigger('click');
 			isDrawing = false;
 			return;
@@ -619,6 +619,7 @@ $(document).ready(async function () {
 		} else {			// 筆刷模式
 			var lw = settings.lineWidth * pressureVal * 2; // 計算線寬
 			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
+			//if (event.type.includes('pointer'))
 			drawBrush(ctx, brushes[settings.brushType], x*ratio, y*ratio, lw);
 
 			lastX = x; // 儲存最後的 X 座標
