@@ -552,7 +552,7 @@ $(document).ready(async function () {
 			if (pressure > 0 && pressure < 1 && pressure != 0.5) hasRealPressure = true;	// 出現過看似真實的筆壓值
 
 			// 真實筆壓值套用敏感度運算
-			if (settings.pressureEffect == 'contrast') return 0.5 + Math.sin((pressure-0.5) * Math.PI)/2;
+			if (settings.pressureEffect == 'contrast') return 0.5 + Math.sin((pressure*0.8-0.4) * Math.PI)/2;
 			if (settings.pressureEffect == 'enhance') return Math.sin(pressure * Math.PI / 2);
 
 			if (mode != 'start') pressure = (lastPressure + pressure) / 2;
