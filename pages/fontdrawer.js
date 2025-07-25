@@ -329,7 +329,11 @@ $(document).ready(async function () {
 		// 初始化筆壓繪圖狀態
 		await updatePressureDrawingStatus();
 	
-		if (!settings.notNewFlag) $('#settingButton').click();
+		if (!settings.notNewFlag) {
+			$('#settingButton').click();
+		} else {
+			if ($('#ads-container')) $('#ads-container').show();
+		}
 		$('#spanDoneCount').text(await countGlyphFromDB());
 
     }).catch((error) => {
@@ -1083,7 +1087,7 @@ $(document).ready(async function () {
 	$('#closeAdsButton').on('click', function () {
 		$('#ads-container').hide();
 	});
-	if ($('#ads-container')) $('#ads-container').show();
+	
 
     // 取得滑鼠或觸控座標
     function getCanvasCoordinates(event) {
