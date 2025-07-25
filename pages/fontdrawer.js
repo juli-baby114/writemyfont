@@ -544,7 +544,7 @@ $(document).ready(async function () {
 		let isRealPressure = typeof(pressure) != 'undefined';
 		if (isRealPressure && toolType != 'pen' && pressure == 0) isRealPressure = false;
 		if (isRealPressure && toolType != 'pen' && !hasRealPressure && (pressure == 1 || pressure == 0.5)) isRealPressure = false;
-		if (toolType == 'pen' && pressure < 0.03) return null;
+		if (toolType == 'pen' && pressure < 0.04) return null;
 		if (mode != 'start' && !simulatePressure && !isRealPressure) return null;
 
 		if (isRealPressure) {
@@ -552,8 +552,8 @@ $(document).ready(async function () {
 			if (pressure > 0 && pressure < 1 && pressure != 0.5) hasRealPressure = true;	// 出現過看似真實的筆壓值
 
 			// 真實筆壓值套用敏感度運算
-			if (settings.pressureEffect == 'contrast') pressure = 0.5 + Math.sin((pressure*0.8-0.4) * Math.PI)/2;
-			if (settings.pressureEffect == 'enhance') pressure = Math.sin(pressure * Math.PI / 2);
+			if (settings.pressureEffect == 'contrast') pressure = 0.5 + Math.sin((pressure*0.7-0.35) * Math.PI)/2;
+			if (settings.pressureEffect == 'enhance') pressure = Math.sin(pressure * Math.PI / 2)*0.96 + 0.04;
 
 			if (mode != 'start') pressure = (lastPressure + pressure) / 2;
 			return lastPressure = pressure;
@@ -914,42 +914,46 @@ $(document).ready(async function () {
 			updateProgress(processedGlyphs, totalGlyphs);				
 			processedGlyphs++;
 
-			var svgData = await loadSVG(gname);				
-			if (!svgData) continue;
-			var path = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
+			try {
+				var svgData = await loadSVG(gname);				
+				if (!svgData) continue;
+				var path = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
 
-			var adw = upm;
-			if (glyphMap[gname].w == 'P' || glyphMap[gname].w == 'H') { // 比例寬自動調整
-				adw = padPath(path, 50);
-			} else if (settings.noFixedWidthFlag) {
-				adw = padPath(path, 100);
+				var adw = upm;
+				if (glyphMap[gname].w == 'P' || glyphMap[gname].w == 'H') { // 比例寬自動調整
+					adw = padPath(path, 50);
+				} else if (settings.noFixedWidthFlag) {
+					adw = padPath(path, 100);
+				}
+
+				var unicode = null;
+				if (gname.match(/^uni([0-9A-F]{4})$/i)) {
+					unicode = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
+				} else if (gname.match(/^u([0-9A-F]{5})$/i)) {
+					unicode = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
+				} else if (gname.indexOf('.vert') < 0 && glyphMap[gname].c.length == 1) {
+					unicode = glyphMap[gname].c.charCodeAt(0); // 使用字符的 Unicode 編碼
+				}
+				var glyph = createGlyph(unicode, gname, adw, path);
+				glyphs.push(glyph);
+				gidMap[gname] = glyphs.length-1;
+
+				// 自動製作全形字符
+				if (glyphMap[gname].f) {
+					var gnameF = glyphMap[gname].f;
+					var pathF = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
+					var adwF = settings.noFixedWidthFlag ? padPath(pathF, 100) : padPath(pathF, upm, true);
+					var unicodeF = null;
+					if (gnameF.match(/^uni([0-9A-F]{4})$/i)) unicodeF = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
+					var glyphF = createGlyph(unicodeF, gnameF, adwF, pathF);
+					fulls.push(glyphF);
+				}
+
+				if (glyphMap[gname].v) verts.push(gname);
+				if (glyphMap[gname].s) ccmps.push(gname);
+			} catch (err) {
+				console.error(`Error processing glyph ${gname}:`, err);
 			}
-
-			var unicode = null;
-			if (gname.match(/^uni([0-9A-F]{4})$/i)) {
-				unicode = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
-			} else if (gname.match(/^u([0-9A-F]{5})$/i)) {
-				unicode = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
-			} else if (gname.indexOf('.vert') < 0 && glyphMap[gname].c.length == 1) {
-				unicode = glyphMap[gname].c.charCodeAt(0); // 使用字符的 Unicode 編碼
-			}
-			var glyph = createGlyph(unicode, gname, adw, path);
-			glyphs.push(glyph);
-			gidMap[gname] = glyphs.length-1;
-
-			// 自動製作全形字符
-			if (glyphMap[gname].f) {
-				var gnameF = glyphMap[gname].f;
-				var pathF = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
-				var adwF = settings.noFixedWidthFlag ? padPath(pathF, 100) : padPath(pathF, upm, true);
-				var unicodeF = null;
-				if (gnameF.match(/^uni([0-9A-F]{4})$/i)) unicodeF = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
-				var glyphF = createGlyph(unicodeF, gnameF, adwF, pathF);
-				fulls.push(glyphF);
-			}
-
-			if (glyphMap[gname].v) verts.push(gname);
-			if (glyphMap[gname].s) ccmps.push(gname);
 		}
 
 		// 加入全形字符在後面
