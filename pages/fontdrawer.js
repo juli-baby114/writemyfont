@@ -1,4 +1,4 @@
-const version = '0.569'; // 版本號
+const version = '0.570'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -575,7 +575,6 @@ $(document).ready(async function () {
 	let lastX, lastY, lastLW;
 	var eraseMode = false;
 
-	
 	function drawBrush(ctx, brush, x, y, lw) {
 		if (userAgent.includes('macintosh') && userAgent.includes('safari') && !userAgent.includes('chrome')) {
 			// 在 Mac Safari 上使用臨時 canvas 繪製，避免直接繪圖造成污垢
@@ -597,7 +596,7 @@ $(document).ready(async function () {
     // 開始繪製
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
 		if (event.touches && event.touches.length === 2) {
-			$('#undoButton').trigger('click');
+			$('#undoButton').trigger('click');		// 先撤銷掉目前的筆劃
 			isDrawing = false;
 			return;
 		}
@@ -721,6 +720,19 @@ $(document).ready(async function () {
         }
     });
 
+	// 雙指復原
+	let undoTouchTime = null;
+	$(document).on('touchstart', function (event) {
+		if (event.touches.length === 2) {
+			undoTouchTime = new Date().getTime(); // 記錄雙指觸控的時間
+		}
+	}).on('touchend', function (event) {
+		if (undoTouchTime && new Date().getTime() - undoTouchTime < 250) { // 如果雙指觸控時間夠短
+			$('#undoButton').trigger('click');
+			undoTouchTime = null;
+		}
+	});
+
 	// 清除畫布的功能
 	$('#clearButton').on('click', async function () {
 		const savedCanvas = await loadFromDB('g_' + nowGlyph);
@@ -798,11 +810,6 @@ $(document).ready(async function () {
 				$(event.shiftKey ? '#prevButton' : '#nextButton').trigger('click');
 				break;
 		}
-	});
-
-	// 支援鍵盤方向鍵操作
-	$(document).on('touchstart', function (event) {
-		if (event.touches.length === 2) $('#undoButton').trigger('click');
 	});
 
     // 更新進度條
