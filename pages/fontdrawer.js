@@ -1,4 +1,4 @@
-const version = '0.570'; // 版本號
+const version = '0.571'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -552,8 +552,8 @@ $(document).ready(async function () {
 			if (pressure > 0 && pressure < 1 && pressure != 0.5) hasRealPressure = true;	// 出現過看似真實的筆壓值
 
 			// 真實筆壓值套用敏感度運算
-			if (settings.pressureEffect == 'contrast') pressure = 0.5 + Math.sin((pressure*0.7-0.35) * Math.PI)/2;
-			if (settings.pressureEffect == 'enhance') pressure = Math.sin(pressure * Math.PI / 2)*0.96 + 0.04;
+			if (settings.pressureEffect == 'contrast') pressure = 0.5 + Math.sin((pressure*0.9-0.45) * Math.PI)/2;
+			if (settings.pressureEffect == 'enhance') pressure = Math.sin(pressure * Math.PI / 2);
 
 			if (mode != 'start') pressure = (lastPressure + pressure) / 2;
 			return lastPressure = pressure;
@@ -589,7 +589,7 @@ $(document).ready(async function () {
 			ctx.drawImage(brushCanvas, x - lw/2, y - lw/2);
 		} else {
 			// 其他瀏覽器直接繪製
-			ctx.drawImage(brush, x - lw/2, y - lw/2, lw, lw);
+			ctx.drawImage(brush, x - lw/2, y - lw/2, lw+1, lw+1);
 		}
 	}
 
