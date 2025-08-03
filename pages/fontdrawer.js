@@ -1,4 +1,4 @@
-const version = '0.591'; // 版本號
+const version = '0.592'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -449,27 +449,34 @@ $(document).ready(async function () {
 
 	var svgTimers = {}; // 用於控制 SVG 儲存的定時器
 
+	async function saveSVG(glyph, pngData) {
+		const svgData = await toSVG(glyph, pngData);
+
+		if (svgData && svgData != '') {
+			await saveToDB('s_' + glyph, svgData);
+		} else {			// 轉外框後才發現是空白的話，連同png一起清掉
+			await deleteFromDB('g_' + glyph);
+			await deleteFromDB('s_' + glyph);
+		}
+
+		$('#spanDoneCount').text(await countGlyphFromDB());
+	}
+
 	// 儲存畫布的功能
-	async function saveToLocalDB() {
+	async function saveToLocalDB(runNow = false) {
 		let saveGlyph = nowGlyph;	// 嘗試解決非同步操作導致的 Race Condition
 		const pngData = canvas.toDataURL();
 		await saveToDB('g_' + saveGlyph, pngData);
 
 		if (svgTimers[saveGlyph]) clearTimeout(svgTimers[saveGlyph]);	// 清除之前的定時器
 
-		svgTimers[saveGlyph] = setTimeout(async function () {	// 延遲轉外框
-			const svgData = await toSVG(saveGlyph, pngData);
-			//console.log(`儲存 ${saveGlyph} 的 SVG`);
-
-			if (svgData && svgData != '') {
-				await saveToDB('s_' + saveGlyph, svgData);
-			} else {			// 轉外框後才發現是空白的話，連同png一起清掉
-				await deleteFromDB('g_' + saveGlyph);
-				await deleteFromDB('s_' + saveGlyph);
-			}
-
-			$('#spanDoneCount').text(await countGlyphFromDB());
-		}, 1200);
+		if (runNow) {	// 如果立即儲存
+			await saveSVG(saveGlyph, pngData);	// 儲存 SVG
+		} else {	// 延遲儲存
+			svgTimers[saveGlyph] = setTimeout(async function () {	// 延遲轉外框
+				saveSVG(saveGlyph, pngData);	// 儲存 SVG
+			}, 1200);
+		}
 	}
 
 	// 修改讀取畫布的功能
@@ -1108,6 +1115,8 @@ $(document).ready(async function () {
 
 	// 顯示字表畫面
     $('#canvasListButton').on('click', async function () {
+		saveToLocalDB(true); // 儲存當前畫布內容到 Local Storage		
+
         $('#listup-container').show();
 		$('#listup-body').empty(); 		// 清空
 

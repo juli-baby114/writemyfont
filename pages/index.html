@@ -54,16 +54,16 @@
 	</div>
 
 	<div id="listup-container" class="dialog">
-		<span id="closeListupButton" class="close">×</span>
 		<div class="dialog-body">
+			<span id="closeListupButton" class="close">×</span>
 			<h2>字符列表</h2>
 			<div id="listup-body"></div>
 		</div>
 	</div>
 
 	<div id="hint-container" class="dialog">
-		<span id="closeHintButton" class="close">×</span>
 		<div class="dialog-body">
+			<span id="closeHintButton" class="close">×</span>
 			<h2>提示 Ver <span id="version"></span></h2>
 			<ul id="hintContent">
 				<li>本工具由「<a href="https://zi-hi.com" target="_blank">字嗨！</a>」提供。</li>
@@ -89,10 +89,10 @@
 			<span class="note" id="span-welcome">在開始書寫之前，先來設定一些基本資訊吧！這些設定值之後都能再更改。<br>提醒您，若您是在App內的瀏覽器開啟本頁，建議用系統瀏覽器開啟，避免資料遺失！</span>
 
 			<h3>字型英文名稱</h3>
-			<input id="fontNameEng" type="text" placeholder="請輸入英文名稱" />
-			
+			<input id="fontNameEng" type="text" placeholder="請輸入英文名稱" maxlength="24" />
+
 			<h3>字型中文名稱</h3>
-			<input id="fontNameCJK" type="text" placeholder="請輸入中文名稱" />
+			<input id="fontNameCJK" type="text" placeholder="請輸入中文名稱" maxlength="10" />
 			
 			<h3>縮放率</h3>
 			<input id="scaleRateSlider" type="range" min="80" max="200" value="100" />

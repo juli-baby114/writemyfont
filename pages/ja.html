@@ -54,19 +54,19 @@
 	</div>
 
 	<div id="listup-container" class="dialog">
-		<span id="closeListupButton" class="close">×</span>
 		<div class="dialog-body">
+			<span id="closeListupButton" class="close">×</span>
 			<h2>グリフ一覧</h2>
 			<div id="listup-body"></div>
 		</div>
 	</div>
 
 	<div id="hint-container" class="dialog">
-		<span id="closeHintButton" class="close">×</span>
 		<div class="dialog-body">
+			<span id="closeHintButton" class="close">×</span>
 			<h2>ヒント Ver <span id="version"></span></h2>
 			<ul id="hintContent">
-				<li>このツールは「<a href="https://x.com/buttaiwan" target="_blank">@buttaiwan</a>」が作りました（半分くらいはAIに放り投げたがｗ）。</li>
+				<li>このツールは「<a href="https://x.com/buttaiwan" target="_blank">@buttaiwan</a>」が作りました。</li>
 				<li>すべてのデータはブラウザに保存されるため、未完成のフォントは定期的にバックアップすることをおすすめします。</li>
 				<li>文字を書いたら、直ちに位置の調整を行うことをおすすめします。一般的に仮名と漢字は中央揃え、欧文はベースライン揃えです（赤いラインは目安）。</li>
 				<li>半角文字は自動的にプロポーショナル幅で出力されるため、水平方向の位置は無視されます。</li>
@@ -90,10 +90,10 @@
 			<span class="note" id="span-welcome">まずはフォントの基本情報を設定しましょう！<br>アプリの組み込みブラウザを利用している場合は、データ紛失を避けるためシステムブラウザで開いてください。</span>
 
 			<h3>フォント名（英語）</h3>
-			<input id="fontNameEng" type="text" placeholder="半角英数字で入力してください" />
+			<input id="fontNameEng" type="text" placeholder="半角英数字で入力してください" maxlength="24" />
 			
 			<h3>フォント名（日本語）</h3>
-			<input id="fontNameCJK" type="text" placeholder="日本語フォント名を入力してください" />
+			<input id="fontNameCJK" type="text" placeholder="日本語フォント名を入力してください" maxlength="10" />
 			
 			<h3>拡大率</h3>
 			<input id="scaleRateSlider" type="range" min="80" max="200" value="100" />
