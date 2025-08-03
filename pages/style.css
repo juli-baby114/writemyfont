@@ -75,8 +75,8 @@ canvas { position: absolute; top: 0; left: 0; width: 360px; height: 360px; touch
 .dialog .note { display: block; color: #ccc }
 
 .close { position: absolute; display: block; right: 20px; top: 15px; font: normal 3em/1 sans-serif}
-.dialog .dummy { display: block; clear: both; height: 6em }
-.dialog-body { height: 100%; overflow: scroll }
+.dialog .dummy { display: block; clear: both; height: 3em }
+.dialog-body { height: 100%; overflow: scroll; max-width: 720px; margin: 0 auto; }
 
 #listup-body svg { display: block; background-color: #fff; width: 50px; height: 50px; float: left; border: 1px solid #ccc; margin: 5px }
 #listup-body span { display: block; background-color: #666; color: #ddd; width: 50px; height: 50px; float: left; border: 1px solid #ccc; line-height: 50px; text-align: center; font-size: 2em; margin: 5px; font-family: GenYoExt, LessonOne, sans-serif; overflow: hidden; }

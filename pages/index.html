@@ -55,27 +55,31 @@
 
 	<div id="listup-container" class="dialog">
 		<span id="closeListupButton" class="close">×</span>
-		<h2>字符列表</h2>
-		<div id="listup-body" class="dialog-body"></div>
+		<div class="dialog-body">
+			<h2>字符列表</h2>
+			<div id="listup-body"></div>
+		</div>
 	</div>
 
 	<div id="hint-container" class="dialog">
 		<span id="closeHintButton" class="close">×</span>
-		<h2>提示 Ver <span id="version"></span></h2>
-		<ul id="hintContent" class="dialog-body">
-			<li>本工具由「<a href="https://zi-hi.com" target="_blank">字嗨！</a>」提供。</li>
-			<li>書寫的字表來自「<a href="https://justfont.com/jf7000" target="_blank">jf7000當務字集</a>」。</li>
-			<li>由於所有資料儲存在您瀏覽器本地端，若擔心被瀏覽器清除，建議定期用匯出功能備份資料。</li>
-			<li>建議每個字寫好後，就立刻調整位置（漢字原則上置中），這樣可避免事後調整困難。</li>
-			<li>半形文字一律輸出成比例寬，故水平方向位置會被忽略。背景的紅線是基線的參考位置。</li>
-			<li>全形的英數字會使用半形英數字自動產生。</li>
-			<li>當所需的字符齊全時，系統會自動處理直排、組合文字的設定。</li>
-			<li>請注意因為技術的限制，目前本系統所產生的OTF檔案，雖可勉強安裝運作，但並非正確的CID格式，可能在Adobe軟體無法正確識別為CJK字型。</li>
-			<li>本服務所生成的字型檔，若使用上造成任何影響，本服務與作者不負任何責任。</li>
-			<li>本系統並未蒐集任何使用者筆跡或其他用戶資訊。但若要公開您的字型檔時，請自行評估筆跡公開的風險。</li>
-			<li>本工具不定期更新，雖然力求盡可能支援先前的版本，但要維護多種舊機制相各種環境有所困難，難以盡善盡美。由於所有版本程式碼都是開源的，可自行從GitHub上使用。若有技術支援需求，可與作者聯絡（可能須付費）。</li>
-			<li>本專案GitHub頁面在<a href="https://github.com/ButTaiwan/writemyfont" target="_blank">這裡</a>，在此可查閱更多資訊。<p class="dummy"></p></li>
-		</ul>
+		<div class="dialog-body">
+			<h2>提示 Ver <span id="version"></span></h2>
+			<ul id="hintContent">
+				<li>本工具由「<a href="https://zi-hi.com" target="_blank">字嗨！</a>」提供。</li>
+				<li>書寫的字表來自「<a href="https://justfont.com/jf7000" target="_blank">jf7000當務字集</a>」。</li>
+				<li>由於所有資料儲存在您瀏覽器本地端，若擔心被瀏覽器清除，建議定期用匯出功能備份資料。</li>
+				<li>建議每個字寫好後，就立刻調整位置（漢字原則上置中），這樣可避免事後調整困難。</li>
+				<li>半形文字一律輸出成比例寬，故水平方向位置會被忽略。背景的紅線是基線的參考位置。</li>
+				<li>全形的英數字會使用半形英數字自動產生。</li>
+				<li>當所需的字符齊全時，系統會自動處理直排、組合文字的設定。</li>
+				<li>請注意因為技術的限制，目前本系統所產生的OTF檔案，雖可勉強安裝運作，但並非正確的CID格式，可能在Adobe軟體無法正確識別為CJK字型。</li>
+				<li>本服務所生成的字型檔，若使用上造成任何影響，本服務與作者不負任何責任。</li>
+				<li>本系統並未蒐集任何使用者筆跡或其他用戶資訊。但若要公開您的字型檔時，請自行評估筆跡公開的風險。</li>
+				<li>本工具不定期更新，雖然力求盡可能支援先前的版本，但要維護多種舊機制相各種環境有所困難，難以盡善盡美。由於所有版本程式碼都是開源的，可自行從GitHub上使用。若有技術支援需求，可與作者聯絡（可能須付費）。</li>
+				<li>本專案GitHub頁面在<a href="https://github.com/ButTaiwan/writemyfont" target="_blank">這裡</a>，在此可查閱更多資訊。<p class="dummy"></p></li>
+			</ul>
+		</div>
 	</div>
 
 	<div id="settings-container" class="dialog">
@@ -98,6 +102,16 @@
 			<h3>我的字就是小</h3>
 			<input id="smallModeCheck" type="checkbox" />
 			<span class="note">適合寫字真的很小的人。</span>
+
+			<h3>背景格線樣式</h3>
+			<select id="gridTypeSelect">
+				<option value="3x3grid">九宮格</option>
+				<option value="3x3grid-new">新九宮格</option>
+				<option value="2x2grid">田字格</option>
+				<option value="stargrid">米字格</option>
+				<option value="boxgrid">回字格</option>
+				<option value="nogrid">無格線（僅字身框）</option>
+			</select>
 
 			<h3>中文字不等寬</h3>
 			<input id="noFixedWidthFlag" type="checkbox" />

@@ -1,4 +1,4 @@
-const version = '0.581'; // 版本號
+const version = '0.590'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -146,6 +146,7 @@ async function loadSettings() {
 		brushType: await loadFromDB('brushType', 0) * 1, 					// 筆刷類型，預設為 0
 		pressureMode: await loadFromDB('pressureMode', 'N') == 'Y',			// 筆壓模式，預設為 N
 		pressureEffect: await loadFromDB('pressureEffect', 'none'),			// 筆壓公式，預設為 none
+		gridType: await loadFromDB('gridType', '3x3grid'),					// 格線類型，預設為 3x3grid
 		oldPressureMode: await loadFromDB('oldPressureMode', 'N') == 'Y',	// 啟用舊版筆壓模式，預設為 N
 		fontNameEng: await loadFromDB('fontNameEng') || 'MyFreehandFont',
 		fontNameCJK: await loadFromDB('fontNameCJK') || fdrawer.fontNameCJK,
@@ -189,7 +190,7 @@ async function initCanvas(canvas) {
 
 	var scale = parseInt(settings.scaleRate, 10) / 100; // 轉換為小數
 
-	// 繪製九宮格底圖
+	// 繪製底圖
 	const gridCanvas = document.getElementById('gridCanvas');
 	const gridCtx = gridCanvas.getContext('2d');
 	gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
@@ -206,24 +207,72 @@ async function initCanvas(canvas) {
 	gridCtx.lineWidth = 1;
 
 	// 繪製格線
-	for (let i = 0; i <= 3; i++) {
+	let lines = 1;
+
+	// 字身框
+	gridCtx.beginPath();
+	gridCtx.rect(gridXOff, gridYOff, emWidth, emHeight);
+	gridCtx.stroke();
+
+	if (settings.gridType == '3x3grid') lines = 3;
+	else if (settings.gridType == '3x3grid-new') lines = 4;
+	else if (settings.gridType == '2x2grid') lines = 2;
+	else if (settings.gridType == 'stargrid') lines = 2;
+
+	for (let i = 1; i < lines; i++) {
+		if (settings.gridType == '3x3grid-new' && i == 2) continue; // 跳過新 3x3 格線的中間線
+
 		gridCtx.beginPath();
-		gridCtx.moveTo(gridXOff + emWidth * i / 3, gridYOff);
-		gridCtx.lineTo(gridXOff + emWidth * i / 3, gridYOff + emHeight);
+		gridCtx.moveTo(gridXOff + emWidth * i / lines, gridYOff);
+		gridCtx.lineTo(gridXOff + emWidth * i / lines, gridYOff + emHeight);
 		gridCtx.stroke();
 
 		gridCtx.beginPath();
-		gridCtx.moveTo(gridXOff, gridYOff + emHeight * i / 3);
-		gridCtx.lineTo(gridXOff + emWidth, gridYOff + emHeight * i / 3);
+		gridCtx.moveTo(gridXOff, gridYOff + emHeight * i / lines);
+		gridCtx.lineTo(gridXOff + emWidth, gridYOff + emHeight * i / lines);
 		gridCtx.stroke();
+	}
 
+	if (settings.gridType == 'stargrid') {
+		gridCtx.beginPath();
+		gridCtx.moveTo(gridXOff, gridYOff);
+		gridCtx.lineTo(gridXOff + emWidth, gridYOff + emHeight);
+		gridCtx.stroke();
+		gridCtx.beginPath();
+		gridCtx.moveTo(gridXOff + emWidth, gridYOff);
+		gridCtx.lineTo(gridXOff, gridYOff + emHeight);
+		gridCtx.stroke();
+	} else if (settings.gridType == 'boxgrid') {
+		gridCtx.beginPath();
+		gridCtx.rect(gridXOff + emWidth*0.15, gridYOff + emHeight*0.15, emWidth*0.7, emHeight*0.7);
+		gridCtx.stroke();
+	}
+
+	if (settings.gridType == 'boxgrid' || settings.gridType == 'nogrid') {
+		let boxLen = 15;
+		gridCtx.beginPath();
+		gridCtx.moveTo(gridXOff - boxLen, gridYOff + emHeight * 0.5);
+		gridCtx.lineTo(gridXOff + boxLen, gridYOff + emHeight * 0.5);
+		gridCtx.stroke();
+		gridCtx.beginPath();
+		gridCtx.moveTo(gridXOff + emWidth - boxLen, gridYOff + emHeight * 0.5);
+		gridCtx.lineTo(gridXOff + emWidth + boxLen, gridYOff + emHeight * 0.5);
+		gridCtx.stroke();
+		gridCtx.beginPath();
+		gridCtx.moveTo(gridXOff + emWidth * 0.5, gridYOff - boxLen);
+		gridCtx.lineTo(gridXOff + emWidth * 0.5, gridYOff + boxLen);
+		gridCtx.stroke();
+		gridCtx.beginPath();
+		gridCtx.moveTo(gridXOff + emWidth * 0.5, gridYOff + emHeight - boxLen);
+		gridCtx.lineTo(gridXOff + emWidth * 0.5, gridYOff + emHeight + boxLen);
+		gridCtx.stroke();
 	}
 
 	// 繪製基線
-	gridCtx.strokeStyle = '#eebbbb';	// 基線顏色
+	gridCtx.strokeStyle = '#ee9999';	// 基線顏色
 	gridCtx.beginPath();
-	gridCtx.moveTo(gridXOff, gridYOff + emHeight*0.72);
-	gridCtx.lineTo(gridXOff + emWidth, gridYOff + emHeight*0.72);
+	gridCtx.moveTo(0, gridYOff + emHeight*0.75);
+	gridCtx.lineTo(gridCanvas.width, gridYOff + emHeight*0.75);
 	gridCtx.stroke();
 
 	// 依照設定值顯示筆寬、筆刷、筆壓UI
@@ -1018,6 +1067,7 @@ $(document).ready(async function () {
 
 		$('#pressureEffectSelect').val(settings.pressureEffect);
 		$('#pressureDrawingEnabled').prop('checked', settings.oldPressureMode);
+		$('#gridTypeSelect').val(settings.gridType);
 
 		if (!settings.notNewFlag) updateSetting('notNewFlag', true); // 如果是第一次使用，則設定 notNewFlag 為 true
     });
@@ -1041,6 +1091,10 @@ $(document).ready(async function () {
 		initCanvas(canvas);
 	});
 	$('#pressureEffectSelect').change(function () { updateSetting('pressureEffect', $(this).val()); });
+	$('#gridTypeSelect').change(function () { 
+		updateSetting('gridType', $(this).val());
+		initCanvas(canvas);
+	});
 
 	// 筆壓繪圖設定事件監聽器
 	$('#pressureDrawingEnabled').on('change', async function () { 
