@@ -1,4 +1,4 @@
-const version = '0.590'; // 版本號
+const version = '0.591'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -1263,5 +1263,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (/FBAN|FBAV|Instagram|Line|Threads/i.test(userAgent)) {
         // 如果是 Facebook、Instagram 或 Line 的 in-app browser
         alert(fdrawer.inAppNotice);
+    }
+
+	// 解決 iOS Safari 按鈕點兩下容易不小心放大視窗的問題
+    if (/iphone|ipad|ipod/.test(userAgent.toLowerCase()) && /safari/.test(userAgent.toLowerCase())) {
+        document.querySelectorAll('body').forEach(function(btn) {
+            btn.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        });
     }
 });
