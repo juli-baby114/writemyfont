@@ -1,4 +1,4 @@
-const version = '0.580'; // 版本號
+const version = '0.581'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -605,7 +605,7 @@ $(document).ready(async function () {
     // 開始繪製
 	$canvas.on('mousedown touchstart pointerdown', function (event) {
 		if (event.touches && event.touches.length === 2) {
-			$('#undoButton').trigger('click');		// 先撤銷掉目前的筆劃
+			if (isDrawing) $('#undoButton').trigger('click');		// 先撤銷掉目前的筆劃
 			isDrawing = false;
 			return;
 		}
