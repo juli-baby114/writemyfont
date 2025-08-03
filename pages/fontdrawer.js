@@ -1,4 +1,4 @@
-const version = '0.571'; // 版本號
+const version = '0.580'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -398,21 +398,29 @@ $(document).ready(async function () {
 		}
 	}
 
+	var svgTimers = {}; // 用於控制 SVG 儲存的定時器
+
 	// 儲存畫布的功能
 	async function saveToLocalDB() {
-		var currentGlyph = nowGlyph;	// 嘗試解決非同步操作導致的 Race Condition
-		const dataURL = canvas.toDataURL();
-		const svgData = await toSVG(currentGlyph, dataURL); // SVG 版本
+		let saveGlyph = nowGlyph;	// 嘗試解決非同步操作導致的 Race Condition
+		const pngData = canvas.toDataURL();
+		await saveToDB('g_' + saveGlyph, pngData);
 
-		if (svgData && svgData != '') {
-			await saveToDB('g_' + currentGlyph, dataURL);
-			await saveToDB('s_' + currentGlyph, svgData);
-		} else {
-			await deleteFromDB('g_' + currentGlyph);
-			await deleteFromDB('s_' + currentGlyph);
-		}
-		
-		$('#spanDoneCount').text(await countGlyphFromDB());
+		if (svgTimers[saveGlyph]) clearTimeout(svgTimers[saveGlyph]);	// 清除之前的定時器
+
+		svgTimers[saveGlyph] = setTimeout(async function () {	// 延遲轉外框
+			const svgData = await toSVG(saveGlyph, pngData);
+			//console.log(`儲存 ${saveGlyph} 的 SVG`);
+
+			if (svgData && svgData != '') {
+				await saveToDB('s_' + saveGlyph, svgData);
+			} else {			// 轉外框後才發現是空白的話，連同png一起清掉
+				await deleteFromDB('g_' + saveGlyph);
+				await deleteFromDB('s_' + saveGlyph);
+			}
+
+			$('#spanDoneCount').text(await countGlyphFromDB());
+		}, 1200);
 	}
 
 	// 修改讀取畫布的功能
@@ -538,13 +546,13 @@ $(document).ready(async function () {
 			hasPointerEvent = false;
 		}
 	
-		events.push(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
-		console.log(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
+		events.push(`${mode} - ${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
+		//console.log(`${eventType} / ${toolType} / P:${pressure} / T:${touchForce} / W:${webkitForce}`); // 儲存事件資訊
 
 		let isRealPressure = typeof(pressure) != 'undefined';
 		if (isRealPressure && toolType != 'pen' && pressure == 0) isRealPressure = false;
 		if (isRealPressure && toolType != 'pen' && !hasRealPressure && (pressure == 1 || pressure == 0.5)) isRealPressure = false;
-		if (toolType == 'pen' && pressure < 0.04) return null;
+		if (toolType == 'pen' && pressure < 0.01) return null;
 		if (mode != 'start' && !simulatePressure && !isRealPressure) return null;
 
 		if (isRealPressure) {
@@ -554,6 +562,7 @@ $(document).ready(async function () {
 			// 真實筆壓值套用敏感度運算
 			if (settings.pressureEffect == 'contrast') pressure = 0.5 + Math.sin((pressure*0.9-0.45) * Math.PI)/2;
 			if (settings.pressureEffect == 'enhance') pressure = Math.sin(pressure * Math.PI / 2);
+			if (settings.pressureEffect == 'enhancex') pressure = Math.sin(Math.sin(pressure * Math.PI / 2) * Math.PI / 2);
 
 			if (mode != 'start') pressure = (lastPressure + pressure) / 2;
 			return lastPressure = pressure;
@@ -572,7 +581,7 @@ $(document).ready(async function () {
 
     // 儲存背景用於筆壓繪圖的即時預覽
     let backgroundImageData = null;
-	let lastX, lastY, lastLW;
+	let lastX, lastY, lastLW, isMoved = false;
 	var eraseMode = false;
 
 	function drawBrush(ctx, brush, x, y, lw) {
@@ -610,6 +619,7 @@ $(document).ready(async function () {
 		var png = canvas.toDataURL();
 		if (!isDrawing && png != undoStack[undoStack.length-1]) undoStack.push(png); // 儲存當前畫布狀態到 undoStack
 		isDrawing = true;	// 儲存畫布後正式宣告筆畫開始
+		if (svgTimers[nowGlyph]) clearTimeout(svgTimers[nowGlyph]);	// 停止SVG轉外框 (提高效能)
 
         if (settings.oldPressureMode) {		// 舊筆壓模式
             const pressure = pressureDrawing.simulatePressure(event.originalEvent, 'start');
@@ -623,11 +633,12 @@ $(document).ready(async function () {
 			var lw = settings.lineWidth * pressureVal * 2; // 計算線寬
 			ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
 			//if (event.type.includes('pointer'))
-			drawBrush(ctx, brushes[settings.brushType], x*ratio, y*ratio, lw);
+			//drawBrush(ctx, brushes[settings.brushType], x*ratio, y*ratio, lw);
 
 			lastX = x; // 儲存最後的 X 座標
 			lastY = y; // 儲存最後的 Y 座標
 		 	lastLW = lw;
+			isMoved = false;
         }
 	});
 
@@ -656,10 +667,11 @@ $(document).ready(async function () {
 
 		} else {
             ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
-			
+
 			var lw = settings.lineWidth * pressureVal * 2;
 
 			var d = Math.max(Math.abs(lastX - x), Math.abs(lastY - y)) * 1.5;
+			if (d > 40) events.push(`Long-DrawImage / ${pressureVal} / ${event.originalEvent.pointerType} / ${x}, ${y}, ${lw} (${lastX}, ${lastY}, ${lastLW}) ${d}`); // 儲存事件資訊
 			if (d > 0) {
 				for (var t = d; t>0; t--) {
 					var tx = (lastX + (x - lastX) * t / d) * ratio;
@@ -674,6 +686,7 @@ $(document).ready(async function () {
 			lastX = x; // 更新最後的 X 座標
 			lastY = y; // 更新最後的 Y 座標
 			lastLW = lw; // 更新最後的筆寬
+			isMoved = true;
         }
     });
 
@@ -683,8 +696,6 @@ $(document).ready(async function () {
         isDrawing = false;
 		const { x, y } = getCanvasCoordinates(event);
 		getPressureValue('end', event, x, y);
-
-        ctx.globalCompositeOperation = "source-over"; // 恢復正常繪圖模式(重要)
 
         if (settings.oldPressureMode) {		// 舊筆壓模式
             // 使用筆壓繪圖系統：生成最終筆跡並繪製
@@ -698,10 +709,18 @@ $(document).ready(async function () {
             // 清除背景圖像數據
             backgroundImageData = null;
         } else {
+			if (!isMoved) {
+				ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // 如果是橡皮擦模式，則使用 destination-out，否則使用 source-over
+				drawBrush(ctx, brushes[settings.brushType], lastX*ratio, lastY*ratio, lastLW);
+			}
+
 			lastX = null;
 			lastY = null;
 			lastLW = null;
+			isMoved = false; // 重置移動狀態
         }
+
+		ctx.globalCompositeOperation = "source-over"; // 恢復正常繪圖模式(重要)
         
         saveToLocalDB(); // 停止繪製時儲存畫布內容到 Local Storage
     });
@@ -870,18 +889,17 @@ $(document).ready(async function () {
 		return new opentype.Glyph(glyphObj);
 	}
 
-	function padPath(path, pad, isAdw) {
+	function padPath(path, pad) {
 		var boundingBox = path.getBoundingBox();
 		var width = Math.round(boundingBox.x2 - boundingBox.x1);
-		var xoff = isAdw ? Math.round((pad - width) / 2 - Math.round(boundingBox.x1)) : // 指定最終字寬模式
-						pad - Math.round(boundingBox.x1);		// 單純指定邊界寬度
-						
+		var xoff = pad - Math.round(boundingBox.x1);		// 單純指定邊界寬度
+
 		path.commands.forEach( c => {
 			c.x = c.x + xoff;
 			if (c.x1) c.x1 = c.x1 + xoff;
 			if (c.x2) c.x2 = c.x2 + xoff;
 		});
-		return isAdw ? pad : width + pad*2; // 返回調整後的寬度
+		return width + pad*2; // 返回調整後的寬度
 	}
 
 	$('#saveAsTester').on('click', async function () {
@@ -922,18 +940,18 @@ $(document).ready(async function () {
 			processedGlyphs++;
 
 			try {
-				var svgData = await loadSVG(gname);				
+				let svgData = await loadSVG(gname);				
 				if (!svgData) continue;
-				var path = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
+				let path = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
 
-				var adw = upm;
+				let adw = upm;
 				if (glyphMap[gname].w == 'P' || glyphMap[gname].w == 'H') { // 比例寬自動調整
 					adw = padPath(path, 50);
 				} else if (settings.noFixedWidthFlag) {
 					adw = padPath(path, 100);
 				}
 
-				var unicode = null;
+				let unicode = null;
 				if (gname.match(/^uni([0-9A-F]{4})$/i)) {
 					unicode = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
 				} else if (gname.match(/^u([0-9A-F]{5})$/i)) {
@@ -941,18 +959,19 @@ $(document).ready(async function () {
 				} else if (gname.indexOf('.vert') < 0 && glyphMap[gname].c.length == 1) {
 					unicode = glyphMap[gname].c.charCodeAt(0); // 使用字符的 Unicode 編碼
 				}
-				var glyph = createGlyph(unicode, gname, adw, path);
+				let glyph = createGlyph(unicode, gname, adw, path);
 				glyphs.push(glyph);
 				gidMap[gname] = glyphs.length-1;
 
 				// 自動製作全形字符
 				if (glyphMap[gname].f) {
-					var gnameF = glyphMap[gname].f;
-					var pathF = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
-					var adwF = settings.noFixedWidthFlag ? padPath(pathF, 100) : padPath(pathF, upm, true);
-					var unicodeF = null;
+					let gnameF = glyphMap[gname].f;
+					let pathF = await opentype.Path.fromSVG(svgData, {flipYBase: 0, scale: scale, y: 880 - scaleoff, x: scaleoff});
+					let adwF = upm;
+					if (settings.noFixedWidthFlag) adwF = padPath(pathF, 100); // 如果沒有固定寬度
+					let unicodeF = null;
 					if (gnameF.match(/^uni([0-9A-F]{4})$/i)) unicodeF = parseInt(RegExp.$1, 16); // 轉換為 Unicode 編碼
-					var glyphF = createGlyph(unicodeF, gnameF, adwF, pathF);
+					let glyphF = createGlyph(unicodeF, gnameF, adwF, pathF);
 					fulls.push(glyphF);
 				}
 
