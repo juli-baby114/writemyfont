@@ -185,7 +185,7 @@
 
 		window.onload = function() {
 			validateInput('');
-			$('#postButton').toggle(navigator.canShare);
+			$('#postButton').toggle(!!navigator.canShare);
 			document.getElementById('glyphInput').focus();
         };
     </script>
