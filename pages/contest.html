@@ -64,7 +64,7 @@
     <h1>手寫字型產生器<br>第一屆基礎字造句大賽</h1>
     <input type="text" id="glyphInput" placeholder="輸入文字...">
     <div class="output" id="output"></div>
-	<button id="postButton">發表我的句子</button>
+	<button id="postButton">在Threads發表我的句子</button>
     <div class="output" id="reference"></div>
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -126,68 +126,9 @@
 
         document.getElementById('postButton').addEventListener('click', async function() {
             const inputText = document.getElementById('glyphInput').value;
-
-            // Create a canvas element
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-
-            // Set canvas dimensions
-            canvas.width = 800;
-            canvas.height = 400;
-
-            // Fill background with dark color
-            context.fillStyle = '#121212';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Set text properties
-            context.font = '30px Arial';
-            context.fillStyle = '#ffffff';
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-
-            // Draw the input text with word wrapping
-            const maxWidth = 700; // Maximum width for text
-            const lineHeight = 40; // Line height for wrapped text
-            const words = inputText.split(' ');
-            let line = '';
-            let y = canvas.height / 2 - (lineHeight * (words.length / 2));
-
-            for (let i = 0; i < words.length; i++) {
-                const testLine = line + words[i] + ' ';
-                const testWidth = context.measureText(testLine).width;
-                if (testWidth > maxWidth && i > 0) {
-                    context.fillText(line, canvas.width / 2, y);
-                    line = words[i] + ' ';
-                    y += lineHeight;
-                } else {
-                    line = testLine;
-                }
-            }
-            context.fillText(line, canvas.width / 2, y);
-
-            // Convert canvas to PNG image
-            const imageURL = canvas.toDataURL('image/png');
-
-			try {
-				fetch(imageDataURL)
-					.then(res => res.blob())
-                    .then(async blob => {
-                        const file = new File([blob], 'myCanvasImage.png', { type: 'image/png' });
-
-						//const words = `我在「第一屆基礎字造句大賽」中寫下了這句話：「${inputText}」，你也來參加吧！https://writemyfont.github.io/contest.html`;
-						// 使用 Web Share API 進行分享
-						await navigator.share({
-							files: [file], // 創建一個模擬的 File 物件
-							title: '手寫字型產生器第一屆基礎字造句大賽', // 標題 (選填)
-							text: words, // 文本內容 (選填)
-						});
-						console.log('分享成功！');
-					});
-			} catch (error) {
-				console.error('分享失敗:', error);
-				// 如果 Web Share API 不支援或分享失敗，可以在這裡加入回退的選項，例如跳出一個提示告知使用者
-				alert('分享失敗，或您的瀏覽器不支援此功能。');
-			}
+			const text = `「${inputText}」\n\n#第一屆基礎字造句大賽\nhttps://buttaiwan.github.io/writemyfont/contest.html`;
+            const url = `https://threads.net/intent/post?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
         });
 
 		window.onload = function() {
