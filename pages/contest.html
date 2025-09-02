@@ -1,0 +1,193 @@
+<html lang="zh-Hant"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一屆基礎字造句大賽</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+		h1 { text-align: center;}
+
+        input {
+            width: 90%;
+            max-width: 400px;
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+			background: #444;
+			color: #eee;
+			text-align: center;
+        }
+
+        .output {
+            width: 90%;
+            max-width: 400px;
+            word-wrap: break-word;
+            font-size: 1.5em;
+			min-height: 3.5em; /* 固定高度，避免跳動 */
+			text-align: center;
+        }
+
+        #reference {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+			font-size: 1em;
+            color: #888; /* 預設灰色字 */
+        }
+
+        span.in-range {
+            color: #4caf50; /* 藍色系 */
+        }
+
+        .out-of-range {
+            color: #f44336; /* 紅色系 */
+        }
+    </style>
+    <script src="cglyphlist.js"></script>
+</head>
+<body>
+    <h1>手寫字型產生器<br>第一屆基礎字造句大賽</h1>
+    <input type="text" id="glyphInput" placeholder="輸入文字...">
+    <div class="output" id="output"></div>
+	<button id="postButton">發表我的句子</button>
+    <div class="output" id="reference"></div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+		const charList = [];
+		for (const key in glyphList['基礎字']) charList.push(glyphMap[glyphList['基礎字'][key]].c);
+		console.log(glyphList['基礎字'].length);
+		console.log(charList.length);
+		console.log(charList);
+
+        function updateReferenceColors(inputText) {
+            const referenceDiv = document.getElementById('reference');
+            referenceDiv.innerHTML = '';
+            for (const char of charList) {
+                const span = document.createElement('span');
+                span.textContent = char;
+                if (inputText.includes(char)) {
+                    span.classList.add('in-range');
+                } else {
+                    span.style.color = '#888'; // 預設灰色系
+                }
+                referenceDiv.appendChild(span);
+            }
+        }
+
+        updateReferenceColors('');
+
+        function validateInput(inputText) {
+            const hasOutOfRange = [...inputText].some(char => !charList.includes(char));
+            const isTooShort = inputText.length < 3;
+            const postButton = document.getElementById('postButton');
+
+            if (hasOutOfRange || isTooShort) {
+                postButton.disabled = true;
+            } else {
+                postButton.disabled = false;
+            }
+        }
+
+        document.getElementById('glyphInput').addEventListener('input', function() {
+            const inputText = this.value;
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+
+            for (const char of inputText) {
+                const span = document.createElement('span');
+                span.textContent = char;
+                if (charList.includes(char)) {
+                    span.classList.add('in-range');
+                } else {
+                    span.classList.add('out-of-range');
+                }
+                outputDiv.appendChild(span);
+            }
+
+            updateReferenceColors(inputText);
+            validateInput(inputText);
+        });
+
+        document.getElementById('postButton').addEventListener('click', async function() {
+            const inputText = document.getElementById('glyphInput').value;
+
+            // Create a canvas element
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Set canvas dimensions
+            canvas.width = 800;
+            canvas.height = 400;
+
+            // Fill background with dark color
+            context.fillStyle = '#121212';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Set text properties
+            context.font = '30px Arial';
+            context.fillStyle = '#ffffff';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            // Draw the input text with word wrapping
+            const maxWidth = 700; // Maximum width for text
+            const lineHeight = 40; // Line height for wrapped text
+            const words = inputText.split(' ');
+            let line = '';
+            let y = canvas.height / 2 - (lineHeight * (words.length / 2));
+
+            for (let i = 0; i < words.length; i++) {
+                const testLine = line + words[i] + ' ';
+                const testWidth = context.measureText(testLine).width;
+                if (testWidth > maxWidth && i > 0) {
+                    context.fillText(line, canvas.width / 2, y);
+                    line = words[i] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, canvas.width / 2, y);
+
+            // Convert canvas to PNG image
+            const imageURL = canvas.toDataURL('image/png');
+
+			try {
+				// 使用 Web Share API 進行分享
+				await navigator.share({
+					files: [new File([''], imageURL, { type: 'image/*' })], // 創建一個模擬的 File 物件
+					title: '第一屆基礎字造句大賽', // 標題 (選填)
+					text: words, // 文本內容 (選填)
+				});
+				console.log('分享成功！');
+			} catch (error) {
+				console.error('分享失敗:', error);
+				// 如果 Web Share API 不支援或分享失敗，可以在這裡加入回退的選項，例如跳出一個提示告知使用者
+				alert('分享失敗，或您的瀏覽器不支援此功能。');
+			}
+        });
+
+		window.onload = function() {
+			validateInput('');
+			$('#postButton').toggle(navigator.canShare());
+			document.getElementById('glyphInput').focus();
+        };
+    </script>
+
+</body></html>
