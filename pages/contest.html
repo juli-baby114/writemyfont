@@ -169,13 +169,20 @@
             const imageURL = canvas.toDataURL('image/png');
 
 			try {
-				// 使用 Web Share API 進行分享
-				await navigator.share({
-					files: [new File([''], imageURL, { type: 'image/*' })], // 創建一個模擬的 File 物件
-					title: '第一屆基礎字造句大賽', // 標題 (選填)
-					text: words, // 文本內容 (選填)
-				});
-				console.log('分享成功！');
+				fetch(imageDataURL)
+					.then(res => res.blob())
+                    .then(async blob => {
+                        const file = new File([blob], 'myCanvasImage.png', { type: 'image/png' });
+
+						//const words = `我在「第一屆基礎字造句大賽」中寫下了這句話：「${inputText}」，你也來參加吧！https://writemyfont.github.io/contest.html`;
+						// 使用 Web Share API 進行分享
+						await navigator.share({
+							files: [new File([''], imageURL, { type: 'image/*' })], // 創建一個模擬的 File 物件
+							title: '手寫字型產生器第一屆基礎字造句大賽', // 標題 (選填)
+							text: words, // 文本內容 (選填)
+						});
+						console.log('分享成功！');
+					});
 			} catch (error) {
 				console.error('分享失敗:', error);
 				// 如果 Web Share API 不支援或分享失敗，可以在這裡加入回退的選項，例如跳出一個提示告知使用者
@@ -185,7 +192,8 @@
 
 		window.onload = function() {
 			validateInput('');
-			$('#postButton').toggle(!!navigator.canShare);
+			console.log(navigator.canShare());
+			$('#postButton').toggle(!!navigator.canShare());
 			document.getElementById('glyphInput').focus();
         };
     </script>
