@@ -177,7 +177,7 @@
 						//const words = `我在「第一屆基礎字造句大賽」中寫下了這句話：「${inputText}」，你也來參加吧！https://writemyfont.github.io/contest.html`;
 						// 使用 Web Share API 進行分享
 						await navigator.share({
-							files: [new File([''], imageURL, { type: 'image/*' })], // 創建一個模擬的 File 物件
+							files: [file], // 創建一個模擬的 File 物件
 							title: '手寫字型產生器第一屆基礎字造句大賽', // 標題 (選填)
 							text: words, // 文本內容 (選填)
 						});
@@ -193,7 +193,7 @@
 		window.onload = function() {
 			validateInput('');
 			console.log(navigator.canShare());
-			$('#postButton').toggle(!!navigator.canShare());
+			//$('#postButton').toggle(!!navigator.canShare());
 			document.getElementById('glyphInput').focus();
         };
     </script>
