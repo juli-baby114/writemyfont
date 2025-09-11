@@ -1,4 +1,4 @@
-const version = '0.592'; // 版本號
+const version = '0.594'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -1041,6 +1041,7 @@ $(document).ready(async function () {
 		// 加入全形字符在後面
 		for (let i in fulls) {
 			var glyphF = fulls[i];
+			if (gidMap[glyphF.name]) continue; 	// 如果使用者已經自行繪製全形字符，則跳過
 			glyphs.push(glyphF);
 			gidMap[glyphF.name] = glyphs.length-1;
 		}
