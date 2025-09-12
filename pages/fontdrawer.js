@@ -1,4 +1,4 @@
-const version = '0.594'; // 版本號
+const version = '0.595'; // 版本號
 const upm = 1000;
 const userAgent = navigator.userAgent.toLowerCase();
 const pressureDelta = 1.3;		// 筆壓模式跟一般模式的筆寬差異倍數 (舊筆壓模式用)
@@ -292,16 +292,18 @@ function initListSelect($listSelect) {
 }
 
 async function createFont(glyphs, gidMap, verts, ccmps) {
+	let testNo = '';
 	if (settings.saveAsTester) {
-		settings.fontNameEng += settings.testSerialNo;
-		settings.fontNameCJK += settings.testSerialNo;
+		testNo = settings.testSerialNo;
+		//settings.fontNameEng += settings.testSerialNo;
+		//settings.fontNameCJK += settings.testSerialNo;
 		updateSetting('testSerialNo', settings.testSerialNo + 1); // 更新測試序號
 	}
 	
 	const font = new opentype.Font({
-		familyName: settings.fontNameEng,
-		fullName: settings.fontNameEng,
-		postScriptName: settings.fontNameEng.replace(/[^a-zA-Z0-9]/g, ''), // 去除特殊字符
+		familyName: settings.fontNameEng + testNo,
+		fullName: settings.fontNameEng + testNo,
+		postScriptName: (settings.fontNameEng + testNo).replace(/[^a-zA-Z0-9]/g, ''), // 去除特殊字符
 		styleName: 'Regular',
 		designer: 'zi-hi.com',
 		designerURL: 'https://zi-hi.com',
@@ -315,8 +317,8 @@ async function createFont(glyphs, gidMap, verts, ccmps) {
 	});
 
 	for (var group in font.names) {
-		font.names[group].fontFamily[fdrawer.fontLang] = settings.fontNameCJK;
-		font.names[group].fullName[fdrawer.fontLang] = settings.fontNameCJK;
+		font.names[group].fontFamily[fdrawer.fontLang] = settings.fontNameCJK + testNo;
+		font.names[group].fullName[fdrawer.fontLang] = settings.fontNameCJK + testNo;
 	}
 
 	font.tables.os2.achVendID = 'ZIHI';
@@ -1044,7 +1046,7 @@ $(document).ready(async function () {
 			if (gidMap[glyphF.name]) continue; 	// 如果使用者已經自行繪製全形字符，則跳過
 			glyphs.push(glyphF);
 			gidMap[glyphF.name] = glyphs.length-1;
-		}
+		}	
 		const font = await createFont(glyphs, gidMap, verts, ccmps);
 
 		// 建立下載連結
