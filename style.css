@@ -26,7 +26,7 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
 #demo-container span { display: block; line-height: 1.2; }
 #glyphName { font-family: Consolas, monospace; color: #aaa }
 #demo-container #charSeq {
-    font-size: 1.8em; /* chữ nhỏ hơn */
+    font-size: 2.4em; /* chữ nhỏ hơn */
     line-height: 1.2;
     margin: 0 auto 10px auto;
     width: 2.7em;      /* khung rộng ra */
