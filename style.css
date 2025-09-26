@@ -36,13 +36,31 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
     display: flex;
     align-items: center;
     justify-content: center; /* chữ luôn căn giữa khung */
-
+	position: relative; /* cần cho pseudo-element */
     /* 2x2 ô vuông guide */
-    background-image:
-        linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
-    background-size: 50% 50%;
-    background-repeat: no-repeat;
+
+/* Tạo 2 đường kẻ ngang và dọc chia 2x2 ô */
+#demo-container #charSeq::before,
+#demo-container #charSeq::after {
+    content: '';
+    position: absolute;
+    background-color: rgba(0,0,0,0.1); /* màu lưới nhạt */
+}
+
+/* đường ngang giữa khung */
+#demo-container #charSeq::before {
+    width: 100%;
+    height: 1px;
+    top: 50%;
+    left: 0;
+}
+
+/* đường dọc giữa khung */
+#demo-container #charSeq::after {
+    width: 1px;
+    height: 100%;
+    left: 50%;
+    top: 0;
 }
 
 #demo-container #charSeq.vert {
@@ -50,7 +68,6 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
     text-orientation: mixed;
     font-feature-settings: "vert";
 }
-
 #prevButton { font-size: 3.2em; position: absolute; left: 0; top: 0; border: 0; background: transparent; box-shadow: none; }
 #nextButton { font-size: 3.2em; position: absolute; right: 0; top: 0; border: 0; background: transparent; box-shadow: none }
 
