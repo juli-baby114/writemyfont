@@ -38,6 +38,7 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
     justify-content: center; /* chữ luôn căn giữa khung */
 	position: relative; /* cần cho pseudo-element */
     /* 2x2 ô vuông guide */
+}
 
 /* Tạo 2 đường kẻ ngang và dọc chia 2x2 ô */
 #demo-container #charSeq::before,
