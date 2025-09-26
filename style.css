@@ -26,11 +26,11 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
 #demo-container span { display: block; line-height: 1.2; }
 #glyphName { font-family: Consolas, monospace; color: #aaa }
 #demo-container #charSeq {
-    font-size: 2.4em; /* chữ nhỏ hơn */
+    font-size: 2.6em; /* chữ nhỏ hơn */
     line-height: 1.2;
     margin: 0 auto 10px auto;
-    width: 2.7em;      /* khung rộng ra */
-    height: 2.7em;     /* khung cao ra → ô vuông */
+    width: 0.4em;      /* khung rộng ra */
+    height: 0.4em;     /* khung cao ra → ô vuông */
     font-family: "Yu Gothic", "Meiryo", "MS Gothic", sans-serif;
     border: 1px solid #aaa;
     display: flex;
