@@ -29,8 +29,8 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
     font-size: 2.6em; /* chữ nhỏ hơn */
     line-height: 1.2;
     margin: 0 auto 10px auto;
-    width: 2em;      /* khung rộng ra */
-    height: 2em;     /* khung cao ra → ô vuông */
+    width: 1.5em;      /* khung rộng ra */
+    height: 1.5em;     /* khung cao ra → ô vuông */
     font-family: "Yu Gothic", "Meiryo", "MS Gothic", sans-serif;
     border: 1px solid #aaa;
     display: flex;
