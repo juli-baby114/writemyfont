@@ -21,8 +21,13 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
 
 @font-face { font-family: LessonOne; src: url('LessonOne-Regular.woff'); font-weight: normal; font-style: normal; }
 @font-face { font-family: GenYoExt; src: url('GenYoExt3-R.woff'); font-weight: normal; font-style: normal; }
-
-#demo-container { margin-bottom: 5px; width: 360px; position: relative; color: #1123c4; text-align: center; font-family: "Yu Gothic", "Meiryo", "MS Gothic", sans-serif; height: 5.6em; margin: 10px auto }
+@font-face {
+  font-family: 'LessonOne';
+  src: url('LessonOne-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+#demo-container { margin-bottom: 5px; width: 360px; position: relative; color: #1123c4; text-align: center; font-family: LessonOne, sans-serif; height: 5.6em; margin: 10px auto }
 #demo-container span { display: block; line-height: 1.2; }
 #demo-container #charSeq {
     font-size: 2.6em; /* chữ nhỏ hơn */
