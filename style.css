@@ -30,7 +30,7 @@ span.butt { display: inline-block; margin: 2px 1px; padding: 4px 6px; font-size:
     margin: 0 auto 10px auto;
     width: 1.5em;      /* khung rộng ra */
     height: 1.5em;     /* khung cao ra → ô vuông */
-    font-family: "Yu Gothic", "Meiryo", "MS Gothic", sans-serif;
+    font-family: LessonOne, sans-serif;
     border: 1px solid #aaa;
     display: flex;
     align-items: center;
